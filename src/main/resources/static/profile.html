@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Dashboard</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; padding: 20px; background:#f5f5f5; }
+nav { background:#667eea; color:white; padding:10px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; }
+nav a { color:white; text-decoration:none; margin-left:15px; font-weight:600; }
+.container { margin-top:20px; background:white; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+h2 { margin-bottom:10px; }
+select, ul { width:100%; padding:10px; margin-bottom:20px; border-radius:6px; border:1px solid #ccc; }
+</style>
+</head>
+<body>
+
+<nav>
+    <div>Dashboard</div>
+    <div>
+        <a href="#" id="logoutBtn">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+<h2>Products</h2>
+<ul id="products"></ul>
+
+<h2>Select Card</h2>
+<select id="cards"></select>
+
+<h2>Select Address</h2>
+<select id="addresses"></select>
+</div>
+<button id="logoutBtn">Logout</button>
+
+<script>
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    fetch("http://localhost:8080/api/logout", { method: "POST" })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            alert(data.message);
+            // clear any stored user info if needed
+            // localStorage.clear();
+            window.location.href = "login.html"; // redirect to login page
+        }
+    });
+});
+</script>
+
+<script>
+// Check if user is logged in
+const user = JSON.parse(localStorage.getItem('user'));
+if(!user) window.location.href = 'login.html';
+
+// Fetch products
+fetch('http://localhost:8080/api/products')
+.then(res => res.json())
+.then(data => {
+    const ul = document.getElementById('products');
+    data.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = `${p.name} - $${p.price}`;
+        ul.appendChild(li);
+    });
+});
+
+// Fetch cards
+fetch(`http://localhost:8080/api/cards/${user.id}`)
+.then(res => res.json())
+.then(data => {
+    const sel = document.getElementById('cards');
+    data.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.cardNumber;
+        sel.appendChild(opt);
+    });
+});
+
+// Fetch addresses
+fetch(`http://localhost:8080/api/addresses/${user.id}`)
+.then(res => res.json())
+.then(data => {
+    const sel = document.getElementById('addresses');
+    data.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = `${a.addressLine}, ${a.city}, ${a.state}, ${a.zip}, ${a.country}`;
+        sel.appendChild(opt);
+    });
+});
+
+// Logout button
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+});
+</script>
+
+</body>
+</html>

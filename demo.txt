@@ -1,0 +1,1186 @@
+
+
+CREATE DATABASE mobile_user;
+
+
+
+USE mobile_user;
+
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(150) UNIQUE,
+    password VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS cards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    card_number VARCHAR(20),
+    user_id INT
+);
+
+INSERT INTO cards (card_number, user_id) VALUES 
+('4111111111111111', 1),
+('4222222222222222', 1),
+('5555555555554444', 1),
+('378282246310005', 1),
+('6011111111111117', 1);
+
+
+CREATE TABLE IF NOT EXISTS addresses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    address_line VARCHAR(255),
+    city VARCHAR(100),
+    state VARCHAR(50),
+    zip VARCHAR(20),
+    country VARCHAR(50)
+);
+
+INSERT INTO addresses (user_id, address_line, city, state, zip, country) VALUES
+(1, '123 Main Street', 'New York', 'NY', '10001', 'USA'),
+(1, '456 Oak Avenue', 'Los Angeles', 'CA', '90001', 'USA'),
+(1, '789 Pine Road', 'Chicago', 'IL', '60601', 'USA'),
+(1, '101 Maple Lane', 'Houston', 'TX', '77001', 'USA'),
+(1, '202 Cedar Boulevard', 'Phoenix', 'AZ', '85001', 'USA');
+
+
+mvn clean spring-boot:run
+
+http://localhost:8080/order?item=cheese
+
+http://localhost:8080/hello
+
+http://localhost:8080/register.html
+
+http://localhost:8080/login.html
+
+
+POST http://localhost:8080/api/register
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john@example.com",
+  "password": "Test@123",
+  "confirm_password": "Test@123"
+}
+
+
+
+
+POST http://localhost:8080/api/login  // LOGIN
+
+{
+  
+  "email": "john@example.com",
+  "password": "Test@123"
+  
+}
+
+
+
+
+http://localhost:8080//api/profile
+
+/api/profile, /api/orders
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+update_profile.php 
+<?php 
+include '../config/session.php';
+require_login();
+include '../config/db.php';
+
+$user_id = $_SESSION['user_id'];
+
+$stmt = $conn->prepare("SELECT first_name, last_name, email FROM users WHERE id=?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Update Profile</title>
+
+<!-- ✅ ADDED: Required for mobile responsiveness -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ---------------- BASE RESET ---------------- */
+* {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ---------------- PAGE ---------------- */
+body {
+    margin: 0;
+    padding: 16px;
+    background: #f5f6fa;
+}
+
+/* ---------------- CONTAINER ---------------- */
+.container {
+    max-width: 480px;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+/* ---------------- HEADINGS ---------------- */
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+/* ---------------- INPUTS ---------------- */
+input {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    font-size: 16px; /* ✅ prevents iOS zoom */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* ---------------- BUTTONS ---------------- */
+.btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    font-size: 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #5a67d8;
+}
+
+/* ---------------- ACTION BUTTON GROUP ---------------- */
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.actions .btn {
+    flex: 1;
+}
+
+/* ---------------- DIVIDER ---------------- */
+hr {
+    margin: 24px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+/* ---------------- MOBILE TWEAKS ---------------- */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Update Profile</h2>
+
+<form id="updateForm">
+    <input type="text" name="first_name" value="<?=htmlspecialchars($user['first_name'])?>" required>
+    <input type="text" name="last_name" value="<?=htmlspecialchars($user['last_name'])?>" required>
+    <input type="email" name="email" value="<?=htmlspecialchars($user['email'])?>" required>
+
+    <hr>
+
+    <h3>Change Password (Optional)</h3>
+    <input type="password" name="old_password" placeholder="Old Password">
+    <input type="password" name="new_password" placeholder="New Password">
+
+    <button class="btn">Update Profile</button>
+</form>
+
+<div class="actions">
+    <button class="btn" onclick="goBack()">Back</button>
+    <button class="btn" onclick="logout()">Logout</button>
+</div>
+</div>
+
+<script>
+// ---------------- LOGOUT ----------------
+async function logout() {
+    const res = await fetch('../api/logout_api.php', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) window.location.href = "login.php";
+}
+
+document.getElementById('updateForm').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const form = new FormData(e.target);
+    const obj = Object.fromEntries(form.entries());
+
+    const res = await fetch('../api/update_profile_api.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(obj)
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        alert(data.message);
+        window.location.href = 'profile.php';
+    } else {
+        alert(data.message);
+    }
+});
+
+function goBack(){
+    window.location.href = 'profile.php';
+}
+</script>
+
+</body>
+</html>
+
+
+++++++++++++++++++++++++++++++++++++
+reset_password.php
+
+<?php
+// Get token from URL
+$token = $_GET['token'] ?? '';
+if (!$token) {
+    die("Invalid password reset link.");
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reset Password</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+}
+
+.container{
+    width: 90%;
+    max-width: 420px;
+    margin: 10vh auto;
+    padding: 25px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.1);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+input{
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border:1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+button.btn{
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+button.btn:hover {
+    background: #5a67d8;
+}
+
+.msg{
+    margin-top:15px;
+    padding:10px;
+    border-radius:5px;
+    display:none;
+    font-size: 0.95rem;
+}
+
+.success{
+    background:#e6fffa;
+    color:#065f46;
+}
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* Responsive typography and spacing */
+@media (max-width: 480px){
+    .container{
+        padding: 20px;
+        margin: 5vh auto;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    input, button.btn{
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+
+    .msg {
+        font-size: 0.9rem;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔐 Reset Password</h2>
+
+    <form id="resetForm">
+        <input type="password" name="password" placeholder="New Password" required>
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+        <button class="btn">Reset Password</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+</div>
+
+<script>
+const token = "<?= htmlspecialchars($token) ?>";
+
+document.getElementById('resetForm').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const form = new FormData(e.target);
+
+    const payload = {
+        token: token,
+        password: form.get('password'),
+        confirm_password: form.get('confirm_password')
+    };
+
+    const res = await fetch('../api/reset_password_api.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    const msg = document.getElementById('msg');
+
+    msg.style.display = 'block';
+
+    if (data.success) {
+        msg.className = 'msg success';
+        msg.innerText = '✅ Password reset successful. Redirecting to login...';
+
+        setTimeout(() => {
+            window.location.href = 'login.php';
+        }, 3000);
+    } else {
+        msg.className = 'msg error';
+        msg.innerText = data.message || (data.errors ? data.errors.join(', ') : 'Error resetting password');
+    }
+});
+</script>
+
+</body>
+</html>
+
+++++++++++++++++++++++++++++++
+orders.php
+
+<?php
+include '../config/session.php';
+require_login();
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Orders</title>
+
+<!-- ✅ REQUIRED -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ---------------- BASE ---------------- */
+*{
+    box-sizing:border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f4f6f8;
+    padding:12px;
+}
+
+/* ---------------- CONTAINER ---------------- */
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+/* ---------------- PROFILE HEADER ---------------- */
+.prf{
+    display:inline-block;
+    margin-bottom:12px;
+    color:white;
+    padding:10px 14px;
+    background:#60a5fa;
+    border-radius:8px;
+    font-size:16px;
+}
+
+/* ---------------- TOP HEADER ---------------- */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.header h1{
+    margin:0;
+}
+
+/* ---------------- BUTTON ---------------- */
+.btn{
+    padding:10px 14px;
+    background:#667eea;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.btn:hover{
+    background:#5a67d8;
+}
+
+/* ---------------- ORDER CARD ---------------- */
+.order{
+    background:white;
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:18px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+/* ---------------- LINKS ---------------- */
+.link{
+    color:#667eea;
+    cursor:pointer;
+    text-decoration:underline;
+    display:inline-block;
+    margin:10px 0;
+}
+
+/* ---------------- ADDRESS BOX ---------------- */
+.box{
+    margin-top:10px;
+}
+
+select{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:14px;
+}
+
+/* ---------------- LIST ---------------- */
+ul{
+    padding-left:18px;
+}
+
+/* ---------------- MOBILE ---------------- */
+@media (max-width: 600px){
+    .header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .btn{
+        width:100%;
+    }
+
+    .prf{
+        width:100%;
+        text-align:center;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 class="prf">
+User Name: <?php echo htmlspecialchars($_SESSION['first_name'].' '.$_SESSION['last_name']); ?>
+</h1>
+
+<div class="header">
+    <h1>My Orders</h1>
+    
+</div>
+
+<div id="orders"></div>
+
+<a href="/Mobile_User/public/profile.php" class="btn">Back</a>
+<div>
+<div>    
+
+<button class="btn" onclick="logout()">Logout</button>
+</div>
+
+<script>
+async function fetchOrders(){
+    const res = await fetch('/Mobile_User/api/orders_api.php');
+    const json = await res.json();
+    const div = document.getElementById('orders');
+    div.innerHTML = '';
+
+    if(!json.success || json.data.length === 0){
+        div.innerHTML = '<p>No orders found.</p>';
+        return;
+    }
+
+    json.data.forEach(o => {
+
+        let items = '';
+        o.items.forEach(i=>{
+            items += `<li>${i.name} x ${i.quantity} ($${i.price})</li>`;
+        });
+
+        let opts = '<option value="">Select new address</option>';
+        o.addresses_set_b.forEach(b=>{
+            opts += `<option value="${b.id}">
+                ${b.address_line}, ${b.city}
+            </option>`;
+        });
+
+        div.innerHTML += `
+        <div class="order">
+            <p><b>Order #</b> ${o.id}</p>
+            <p><b>Tracking:</b> ${o.tracking_number}</p>
+            <p><b>Status:</b> ${o.status || 'Processing'}</p>
+            <p><b>Total:</b> $${o.total}</p>
+
+            <p><b>Delivery Address:</b><br>${o.delivery_address}</p>
+
+            <span class="link" onclick="toggle(${o.id})">
+                Want to change/update the delivery address?
+            </span>
+
+            <div class="box" id="box-${o.id}" style="display:none">
+                <select onchange="updateAddress(${o.id},this.value)">
+                    ${opts}
+                </select>
+            </div>
+
+            <ul>${items}</ul>
+
+            <button class="btn" onclick="cancelOrder(${o.id})">
+                Cancel Order
+            </button>
+        </div>`;
+    });
+}
+
+function toggle(id){
+    const box = document.getElementById('box-'+id);
+    box.style.display = box.style.display==='none'?'block':'none';
+}
+
+async function updateAddress(orderId,addressId){
+    if(!addressId) return;
+    await fetch('/Mobile_User/api/orders_api.php',{
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            order_id:orderId,
+            whitelist_address_id:addressId
+        })
+    });
+    fetchOrders();
+}
+
+async function cancelOrder(id){
+    if(!confirm('Cancel this order?')) return;
+    await fetch('/Mobile_User/api/orders_api.php',{
+        method:'DELETE',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({order_id:id})
+    });
+    fetchOrders();
+}
+
+async function logout(){
+    const res = await fetch('/Mobile_User/api/logout_api.php',{method:'POST'});
+    const data = await res.json();
+    if(data.success){
+        window.location.href = '/Mobile_User/public/login.php';
+    }
+}
+
+fetchOrders();
+</script>
+
+</body>
+</html>
+
+
+++++++++++++++++++++++++++++++++++++++
+
+
+Forgot_password.php
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Forgot Password</title>
+<meta charset="UTF-8">
+
+<!-- ✅ REQUIRED FOR RESPONSIVE DESIGN -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ---------------- RESET ---------------- */
+* {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ---------------- PAGE ---------------- */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f4f6f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+/* ---------------- CARD ---------------- */
+.container {
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.12);
+}
+
+/* ---------------- HEADINGS ---------------- */
+h2 {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+/* ---------------- INPUT ---------------- */
+input {
+    width: 100%;
+    padding: 14px;
+    margin: 12px 0;
+    font-size: 16px; /* ✅ prevents iOS zoom */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* ---------------- BUTTON ---------------- */
+.btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    font-size: 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #5a67d8;
+}
+
+/* ---------------- MESSAGE ---------------- */
+.msg {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    display: none;
+    font-size: 15px;
+}
+
+.success {
+    background: #e6fffa;
+    color: #065f46;
+}
+
+.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* ---------------- LINK ---------------- */
+a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ---------------- MOBILE TWEAKS ---------------- */
+@media (max-width: 480px) {
+    .container {
+        padding: 20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>🔑 Forgot Password</h2>
+
+    <form id="forgotForm">
+        <input type="email" name="email" placeholder="Enter your email" required>
+        <button class="btn">Send Reset Link</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+
+    <p style="text-align:center;margin-top:18px">
+        <a href="login.php">← Back to Login</a>
+    </p>
+</div>
+
+<script>
+document.getElementById('forgotForm').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const email = new FormData(e.target).get('email');
+
+    const res = await fetch('../api/forgot_password_api.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+    const msg = document.getElementById('msg');
+
+    msg.style.display = 'block';
+
+    if(data.success){
+        msg.className = 'msg success';
+        msg.innerText = '📧 Password reset link sent. Check your email.';
+    } else {
+        msg.className = 'msg error';
+        msg.innerText = data.message;
+    }
+});
+</script>
+
+</body>
+</html>
+
+
++++++++++++++++++++++++++++
+
+
+
+checkout.php
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Checkout</title>
+<style>
+.container {
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+}
+.btn {
+    padding: 10px;
+    background: #38a169;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.success-box {
+    background: #e6fffa;
+    border: 1px solid #38a169;
+    padding: 15px;
+    margin-top: 20px;
+    display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Checkout</h2>
+
+    <button class="btn" onclick="checkout()">Place Order</button>
+
+    <div id="successBox" class="success-box">
+        <h3>✅ Order Successful!</h3>
+        <p><b>Tracking Number:</b> <span id="trackingNumber"></span></p>
+        <p>This page will refresh automatically.</p>
+    </div>
+</div>
+
+<script>
+async function checkout() {
+
+    const res = await fetch('../api/checkout_api.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            card_number: "4111111111111111",
+            address_id: 1
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        document.getElementById('successBox').style.display = 'block';
+        document.getElementById('trackingNumber').innerText = data.tracking_number;
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 5000);
+    } else {
+        alert(data.message);
+    }
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+++++++++++++++++++++++++++++++
+
+
+cart.php
+
+<?php
+require_once '../config/session.php';
+require_login();
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Cart</title>
+<style>
+table { width:60%; margin:auto; border-collapse:collapse;}
+th, td { border:1px solid #ccc; padding:8px; text-align:center;}
+.total { font-weight:bold; text-align:right; }
+button { padding:2px 6px; }
+</style>
+</head>
+
+<body>
+<h2 align="center">My Cart</h2>
+
+<table id="cartTable">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" class="total">Total</td>
+            <td class="total" id="cartTotal">$0.00</td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+async function loadCart() {
+    const res = await fetch('../api/cart_api.php');
+    const result = await res.json();
+
+    if (!result.success) {
+        alert(result.message);
+        return;
+    }
+
+    const tbody = document.querySelector('#cartTable tbody');
+    tbody.innerHTML = '';
+
+    result.data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>$${item.price}</td>
+            <td>${item.quantity}</td>
+            <td>$${(item.price * item.quantity).toFixed(2)}</td>
+            <td>
+                <button onclick="updateQty(${item.product_id}, 1)">+</button>
+                <button onclick="updateQty(${item.product_id}, -1)">−</button>
+                <button onclick="removeItem(${item.product_id})">Remove</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    document.getElementById('cartTotal').innerText = '$' + result.total;
+}
+
+async function updateQty(product_id, change) {
+    await fetch('../api/cart_api.php?PHPSESSID=<?php echo session_id(); ?>', {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({product_id, change})
+    });
+    loadCart();
+}
+
+async function removeItem(product_id) {
+    await fetch('../api/cart_api.php?PHPSESSID=<?php echo session_id(); ?>', {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({product_id})
+    });
+    loadCart();
+}
+
+loadCart();
+</script>
+</body>
+</html>
+
+
++++++++++++++++++++++++++++++++++++
+
+
+test_mailhog.php
+
+
+<?php
+$to = "user@example.com";
+$subject = "MailHog Test Email";
+$message = "Hello! This email is captured by MailHog.";
+$headers = "From: noreply@local.dev";
+
+if(mail($to, $subject, $message, $headers)){
+    echo "Email sent successfully!";
+}else{
+    echo "Email failed!";
+}
+
+
+++++++++++++++++++++++++++++++++++++
+
+track_order_api.php
+
+<?php
+header('Content-Type: application/json');
+include '../config/db.php';
+
+$data = json_decode(file_get_contents("php://input"), true);
+$tracking_number = trim($data['tracking_number'] ?? '');
+
+if (!$tracking_number) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Tracking number is required"
+    ]);
+    exit;
+}
+
+/* ======================
+   FETCH ORDER BY TRACKING
+====================== */
+$stmt = $conn->prepare("
+    SELECT 
+        o.id AS order_id,
+        o.total,
+        o.created_at,
+        t.tracking_number,
+        t.status,
+        u.first_name,
+        u.last_name,
+        u.email
+    FROM order_tracking t
+    JOIN orders o ON o.id = t.order_id
+    JOIN users u ON u.id = o.user_id
+    WHERE t.tracking_number = ?
+      AND o.deleted_at IS NULL
+");
+$stmt->execute([$tracking_number]);
+$order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$order) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Invalid tracking number"
+    ]);
+    exit;
+}
+
+/* ======================
+   FETCH ORDER ITEMS
+====================== */
+$stmt = $conn->prepare("
+    SELECT p.name, p.price, oi.quantity
+    FROM order_items oi
+    JOIN products p ON p.id = oi.product_id
+    WHERE oi.order_id = ?
+");
+$stmt->execute([$order['order_id']]);
+$items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$order['items'] = $items;
+
+/* ======================
+   RESPONSE
+====================== */
+echo json_encode([
+    "success" => true,
+    "data" => $order
+]);
+
+
+++++++++++++++++++++++++++++++++++++++++
+
+
+-- Add 5 whitelisted card numbers for user_id 1
+INSERT INTO cards (card_number, user_id) VALUES
+('4111111111111111', 1),
+('4222222222222222', 1),
+('5555555555554444', 1),
+('378282246310005', 1),
+('6011111111111117', 1);
+
+-- Add 5 addresses for user_id 1
+INSERT INTO addresses (user_id, address_line, city, state, zip, country) VALUES
+//(1, '123 Main Street', 'New York', 'NY', '10001', 'USA'),
+//(1, '456 Oak Avenue', 'Los Angeles', 'CA', '90001', 'USA'),
+//(1, '789 Pine Road', 'Chicago', 'IL', '60601', 'USA'),
+//(1, '101 Maple Lane', 'Houston', 'TX', '77001', 'USA'),
+//(1, '202 Cedar Boulevard', 'Phoenix', 'AZ', '85001', 'USA');
+
++++++++++++++++++++++++++++++++++++++
+
+
+
+
