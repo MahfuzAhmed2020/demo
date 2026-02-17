@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-Stage Progress Tracker - To Do · In Progress · Done</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1600px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: clamp(15px, 4vw, 40px);
+            padding: clamp(15px, 4vw, 30px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: clamp(15px, 4vw, 30px);
+            font-size: clamp(28px, 6vw, 48px);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #fff, #e0e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 30px;
+            font-size: clamp(14px, 3vw, 16px);
+            letter-spacing: 1px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(15px, 3vw, 25px);
+            margin-bottom: clamp(20px, 5vw, 40px);
+        }
+
+        .column {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: clamp(12px, 3vw, 24px);
+            padding: clamp(15px, 4vw, 20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+            max-height: 700px;
+        }
+
+        .column:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .todo .column-header {
+            border-bottom-color: #ff6b6b;
+        }
+
+        .progress .column-header {
+            border-bottom-color: #ffd93d;
+        }
+
+        .done .column-header {
+            border-bottom-color: #51cf66;
+        }
+
+        .column-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .column-icon {
+            font-size: clamp(20px, 5vw, 24px);
+        }
+
+        .column-title h2 {
+            font-size: clamp(18px, 4vw, 22px);
+            font-weight: 600;
+            color: white;
+        }
+
+        .count-badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: clamp(12px, 3vw, 14px);
+            font-weight: 600;
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .timer-badge {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .task-list {
+            min-height: 300px;
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+
+        .task-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .task-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .task-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .task-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .task-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: slideIn 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .todo .task-item {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .progress .task-item {
+            border-left: 4px solid #ffd93d;
+        }
+
+        .done .task-item {
+            border-left: 4px solid #51cf66;
+            opacity: 0.8;
+        }
+
+        .done .task-text {
+            text-decoration: line-through;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .task-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .task-text {
+            font-size: clamp(14px, 3vw, 15px);
+            font-weight: 500;
+            color: white;
+            word-break: break-word;
+            padding-right: 25px;
+        }
+
+        .task-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .task-date {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .task-timer {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            color: #ffd93d;
+        }
+
+        .priority-tag {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .priority-medium {
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            border: 1px solid rgba(255, 217, 61, 0.3);
+        }
+
+        .priority-low {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+            border: 1px solid rgba(81, 207, 102, 0.3);
+        }
+
+        .add-task {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .add-task-input {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .add-task input, .add-task select {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: clamp(13px, 3vw, 14px);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .add-task input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .add-task input:focus, .add-task select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .add-task select {
+            color: white;
+            cursor: pointer;
+        }
+
+        .add-task select option {
+            background: #2a2a40;
+            color: white;
+        }
+
+        .add-btn {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: clamp(13px, 3vw, 14px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .summary-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-value {
+            font-size: clamp(28px, 5vw, 36px);
+            font-weight: bold;
+            color: white;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: clamp(12px, 2.5vw, 14px);
+            color: rgba(255,255,255,0.5);
+            margin-top: 5px;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #51cf66);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: rgba(255,255,255,0.3);
+            padding: 30px 20px;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1024px) {
+            .board {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .board {
+                grid-template-columns: 1fr;
+            }
+            
+            .column {
+                max-height: 500px;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .column-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .add-task-input {
+                flex-direction: column;
+            }
+            
+            .add-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ PROGRESS TRACKER ⚡</h1>
+        <div class="subtitle">To Do · In Progress · Done</div>
+        
+        <div class="board">
+            <!-- TO DO Column -->
+            <div class="column todo" id="todoColumn">
+                <div class="column-header">
+                    <div class="column-title">
+                        <span class="column-icon">📝</span>
+                        <h2>To Do</h2>
+                    </div>
+                    <div class="count-badge" id="todoCount">0</div>
+                </div>
+                
+                <div class="task-list" id="todoList">
+                    <!-- Tasks will be added here -->
+                </div>
+                
+                <div class="add-task">
+                    <div class="add-task-input">
+                        <input type="text" id="newTodoInput" placeholder="Enter task..." onkeypress="handleKeyPress(event, 'todo')">
+                        <select id="todoPriority">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                        <button class="add-btn" onclick="addTask('todo')">
+                            <span>➕</span> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- IN PROGRESS Column -->
+            <div class="column progress" id="progressColumn">
+                <div class="column-header">
+                    <div class="column-title">
+                        <span class="column-icon">⚡</span>
+                        <h2>In Progress</h2>
+                    </div>
+                    <div class="count-badge" id="progressCount">0</div>
+                </div>
+                
+                <div class="task-list" id="progressList">
+                    <!-- Tasks will be added here -->
+                </div>
+                
+                <div class="add-task">
+                    <div class="add-task-input">
+                        <input type="text" id="newProgressInput" placeholder="Enter task..." onkeypress="handleKeyPress(event, 'progress')">
+                        <select id="progressPriority">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                        <button class="add-btn" onclick="addTask('progress')">
+                            <span>➕</span> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DONE Column -->
+            <div class="column done" id="doneColumn">
+                <div class="column-header">
+                    <div class="column-title">
+                        <span class="column-icon">✅</span>
+                        <h2>Done</h2>
+                    </div>
+                    <div class="count-badge" id="doneCount">0</div>
+                </div>
+                
+                <div class="task-list" id="doneList">
+                    <!-- Tasks will be added here -->
+                </div>
+                
+                <div class="add-task">
+                    <div class="add-task-input">
+                        <input type="text" id="newDoneInput" placeholder="Enter completed task..." onkeypress="handleKeyPress(event, 'done')">
+                        <select id="donePriority">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                        <button class="add-btn" onclick="addTask('done')">
+                            <span>➕</span> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="inProgressTasks">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedTasks">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-labels">
+                    <span>🏁 To Do: <span id="todoPercent">0%</span></span>
+                    <span>⚡ In Progress: <span id="progressPercent">0%</span></span>
+                    <span>✅ Done: <span id="donePercent">0%</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px; color: rgba(255,255,255,0.5); font-size: 13px;" id="motivationMessage">
+                🚀 Click on tasks to move them forward!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Task data with sample tasks
+        let tasks = {
+            todo: [
+                { id: 1, text: "Research project requirements", priority: "high", date: "2024-01-15", timer: 0 },
+                { id: 2, text: "Create wireframes", priority: "medium", date: "2024-01-16", timer: 0 },
+                { id: 3, text: "Gather resources", priority: "low", date: "2024-01-17", timer: 0 }
+            ],
+            progress: [
+                { id: 4, text: "Design database schema", priority: "high", date: "2024-01-14", timer: 45 },
+                { id: 5, text: "Setup development environment", priority: "medium", date: "2024-01-13", timer: 30 }
+            ],
+            done: [
+                { id: 6, text: "Project kickoff meeting", priority: "high", date: "2024-01-12", timer: 0 },
+                { id: 7, text: "Team onboarding", priority: "medium", date: "2024-01-11", timer: 0 }
+            ]
+        };
+        
+        let nextId = 8;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderAll();
+            startTimers();
+        });
+
+        // Handle Enter key press
+        function handleKeyPress(event, column) {
+            if (event.key === 'Enter') {
+                addTask(column);
+            }
+        }
+
+        // Add new task
+        function addTask(column) {
+            const inputMap = {
+                'todo': 'newTodoInput',
+                'progress': 'newProgressInput',
+                'done': 'newDoneInput'
+            };
+            
+            const priorityMap = {
+                'todo': 'todoPriority',
+                'progress': 'progressPriority',
+                'done': 'donePriority'
+            };
+            
+            const input = document.getElementById(inputMap[column]);
+            const prioritySelect = document.getElementById(priorityMap[column]);
+            const taskText = input.value.trim();
+            
+            if (taskText === '') {
+                alert('Please enter a task!');
+                return;
+            }
+            
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            
+            tasks[column].push({
+                id: nextId++,
+                text: taskText,
+                priority: prioritySelect.value,
+                date: dateStr,
+                timer: 0
+            });
+            
+            input.value = '';
+            renderAll();
+        }
+
+        // Move task to next stage
+        function moveTask(taskId, currentColumn) {
+            const taskIndex = tasks[currentColumn].findIndex(t => t.id === taskId);
+            if (taskIndex === -1) return;
+            
+            const task = tasks[currentColumn][taskIndex];
+            
+            // Determine next column
+            let nextColumn;
+            if (currentColumn === 'todo') nextColumn = 'progress';
+            else if (currentColumn === 'progress') nextColumn = 'done';
+            else return; // Can't move from done 
+            
+            // Remove from current column
+            tasks[currentColumn].splice(taskIndex, 1);
+            
+            // Add to next column
+            tasks[nextColumn].push(task);
+            
+            renderAll();
+        }
+
+        // Move task backward
+        function moveTaskBack(taskId, currentColumn) {
+            if (currentColumn === 'todo') return; // Can't move back from todo
+            
+            const taskIndex = tasks[currentColumn].findIndex(t => t.id === taskId);
+            if (taskIndex === -1) return;
+            
+            const task = tasks[currentColumn][taskIndex];
+            
+            // Determine previous column
+            let prevColumn;
+            if (currentColumn === 'progress') prevColumn = 'todo';
+            else if (currentColumn === 'done') prevColumn = 'progress';
+            
+            // Remove from current column
+            tasks[currentColumn].splice(taskIndex, 1);
+            
+            // Add to previous column
+            tasks[prevColumn].push(task);
+            
+            renderAll();
+        }
+
+        // Delete task
+        function deleteTask(taskId, column) {
+            if (confirm('Delete this task?')) {
+                tasks[column] = tasks[column].filter(t => t.id !== taskId);
+                renderAll();
+            }
+        }
+
+        // Start timers for in-progress tasks
+        function startTimers() {
+            setInterval(() => {
+                tasks.progress = tasks.progress.map(task => {
+                    if (task.priority === 'high') {
+                        task.timer = (task.timer || 0) + 1;
+                    }
+                    return task;
+                });
+                
+                // Update timer display every minute
+                const timerElements = document.querySelectorAll('.task-timer');
+                if (timerElements.length > 0) {
+                    renderAll();
+                }
+            }, 60000); // Update every minute
+        }
+
+        // Format timer
+        function formatTimer(minutes) {
+            if (!minutes || minutes === 0) return '';
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            if (hours > 0) {
+                return `${hours}h ${mins}m`;
+            }
+            return `${mins}m`;
+        }
+
+        // Render all tasks
+        function renderAll() {
+            renderColumn('todo');
+            renderColumn('progress');
+            renderColumn('done');
+            updateStats();
+        }
+
+        // Render specific column
+        function renderColumn(column) {
+            const listElement = document.getElementById(column + 'List');
+            const countElement = document.getElementById(column + 'Count');
+            
+            if (tasks[column].length === 0) {
+                listElement.innerHTML = `<div class="empty-message">✨ No tasks in ${column}</div>`;
+            } else {
+                listElement.innerHTML = tasks[column].map(task => `
+                    <div class="task-item" onclick="moveTask(${task.id}, '${column}')">
+                        <div class="task-content">
+                            <div class="task-header">
+                                <span class="task-text">${task.text}</span>
+                                <div class="task-actions">
+                                    ${column !== 'todo' ? `
+                                        <button class="action-btn" onclick="event.stopPropagation(); moveTaskBack(${task.id}, '${column}')">
+                                            ⬅️
+                                        </button>
+                                    ` : ''}
+                                    ${column !== 'done' ? `
+                                        <button class="action-btn" onclick="event.stopPropagation(); moveTask(${task.id}, '${column}')">
+                                            ➡️
+                                        </button>
+                                    ` : ''}
+                                    <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteTask(${task.id}, '${column}')">
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="task-meta">
+                                <span class="task-date">📅 ${task.date}</span>
+                                ${task.timer > 0 ? `<span class="task-timer">⏱️ ${formatTimer(task.timer)}</span>` : ''}
+                                <span class="priority-tag priority-${task.priority}">
+                                    ${task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢'} ${task.priority}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            countElement.textContent = tasks[column].length;
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalTasks = tasks.todo.length + tasks.progress.length + tasks.done.length;
+            const inProgressTasks = tasks.progress.length;
+            const completedTasks = tasks.done.length;
+            
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('inProgressTasks').textContent = inProgressTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            
+            // Calculate percentages
+            const todoPercent = totalTasks > 0 ? Math.round((tasks.todo.length / totalTasks) * 100) : 0;
+            const progressPercent = totalTasks > 0 ? Math.round((tasks.progress.length / totalTasks) * 100) : 0;
+            const donePercent = totalTasks > 0 ? Math.round((tasks.done.length / totalTasks) * 100) : 0;
+            
+            document.getElementById('todoPercent').textContent = todoPercent + '%';
+            document.getElementById('progressPercent').textContent = progressPercent + '%';
+            document.getElementById('donePercent').textContent = donePercent + '%';
+            
+            // Update progress bar (weighted: 0% for todo, 50% for progress, 100% for done)
+            const weightedProgress = totalTasks > 0 
+                ? (tasks.todo.length * 0 + tasks.progress.length * 50 + tasks.done.length * 100) / totalTasks
+                : 0;
+            
+            document.getElementById('progressFill').style.width = weightedProgress + '%';
+            
+            // Update motivation message
+            const messageEl = document.getElementById('motivationMessage');
+            if (completedTasks === totalTasks && totalTasks > 0) {
+                messageEl.innerHTML = '🎉 Congratulations! All tasks completed!';
+            } else if (inProgressTasks > 0) {
+                messageEl.innerHTML = '⚡ Keep going! You\'re making progress!';
+            } else if (totalTasks === 0) {
+                messageEl.innerHTML = '✨ Add some tasks to begin your journey!';
+            } else {
+                messageEl.innerHTML = '🚀 Click on tasks to move them forward!';
+            }
+        }
+
+        // Touch device support
+        if ('ontouchstart' in window) {
+            document.querySelectorAll('.task-item').forEach(item => {
+                item.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'translateX(5px)';
+                });
+                
+                item.addEventListener('touchend', function(e) {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIRA-style Board - Team Tasks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0747A6, #0052CC);
+            padding: 20px;
+        }
+
+        .jira-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            height: calc(100vh - 40px);
+        }
+
+        /* Left Panel - Team Members */
+        .team-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e6e9f0;
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #172B4D;
+        }
+
+        .team-stats {
+            background: #F4F5F7;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #5E6C84;
+            font-weight: 500;
+        }
+
+        .team-section {
+            margin-bottom: 25px;
+        }
+
+        .team-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #5E6C84;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            border: 1px solid #EBECF0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .team-member:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(0, 82, 204, 0.15);
+            border-color: #0052CC;
+        }
+
+        .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0052CC, #0747A6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .member-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .member-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #172B4D;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-role {
+            font-size: 11px;
+            color: #5E6C84;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .role-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-dev { background: #E6F7FF; color: #0052CC; }
+        .role-qa { background: #FFF0E6; color: #D94A4A; }
+        .role-po { background: #E6FFE6; color: #00875A; }
+        .role-ba { background: #F2E6FF; color: #5243AA; }
+        .role-sm { background: #FFF5CC; color: #FF8B00; }
+        .role-member { background: #F4F5F7; color: #5E6C84; }
+
+        .member-task-count {
+            background: #F4F5F7;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            color: #172B4D;
+            font-weight: 500;
+        }
+
+        /* Right Panel - Board */
+        .board-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .board-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(9, 30, 66, 0.1);
+        }
+
+        .board-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #172B4D;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sprint-info {
+            background: #F4F5F7;
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sprint-name {
+            font-weight: 600;
+            color: #172B4D;
+        }
+
+        .sprint-dates {
+            font-size: 13px;
+            color: #5E6C84;
+        }
+
+        .board-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            flex: 1;
+            min-height: 0;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .column {
+            background: #F4F5F7;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-width: 260px;
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .column-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-title h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #172B4D;
+        }
+
+        .column-count {
+            background: #DFE1E6;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #172B4D;
+        }
+
+        .task-list {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 200px;
+            max-height: calc(100vh - 250px);
+            padding: 5px;
+        }
+
+        .task-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .task-list::-webkit-scrollbar-track {
+            background: #DFE1E6;
+            border-radius: 10px;
+        }
+
+        .task-list::-webkit-scrollbar-thumb {
+            background: #7A869A;
+            border-radius: 10px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            border: 1px solid #EBECF0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 82, 204, 0.15);
+            border-color: #0052CC;
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .task-id {
+            font-size: 11px;
+            font-weight: 600;
+            color: #5E6C84;
+            background: #F4F5F7;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .task-priority {
+            font-size: 12px;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #172B4D;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .task-assignee {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-top: 1px solid #EBECF0;
+            border-bottom: 1px solid #EBECF0;
+            margin-bottom: 10px;
+        }
+
+        .assignee-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: #0052CC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .assignee-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: #172B4D;
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #5E6C84;
+        }
+
+        .task-date {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            justify-content: flex-end;
+        }
+
+        .task-btn {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-move {
+            background: #E6F7FF;
+            color: #0052CC;
+        }
+
+        .btn-move:hover {
+            background: #0052CC;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #FFEBE6;
+            color: #D94A4A;
+        }
+
+        .btn-delete:hover {
+            background: #D94A4A;
+            color: white;
+        }
+
+        .add-task {
+            margin-top: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .add-task input, .add-task select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #DFE1E6;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .add-task button {
+            width: 100%;
+            padding: 8px;
+            background: #0052CC;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-task button:hover {
+            background: #0747A6;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #5E6C84;
+            padding: 20px;
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .jira-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .board-columns {
+                grid-template-columns: repeat(4, 1fr);
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .board-columns {
+                grid-template-columns: repeat(4, 280px);
+            }
+        }
+
+        /* Drag and drop visual feedback */
+        .drag-over {
+            background: #E6F7FF;
+            border: 2px dashed #0052CC;
+        }
+
+        .task-card.droppable {
+            box-shadow: 0 0 0 2px #0052CC;
+        }
+    </style>
+</head>
+<body>
+    <div class="jira-container">
+        <!-- Left Panel - Team Members -->
+        <div class="team-panel">
+            <div class="panel-header">
+                <h2>👥 Team Members</h2>
+                <span class="team-stats" id="teamCount">8 members</span>
+            </div>
+            
+            <div class="team-section">
+                <div class="team-section-title">
+                    <span>👨‍💻 DEVELOPMENT</span>
+                </div>
+                <div id="developersList"></div>
+            </div>
+            
+            <div class="team-section">
+                <div class="team-section-title">
+                    <span>🧪 QUALITY ASSURANCE</span>
+                </div>
+                <div id="qaList"></div>
+            </div>
+            
+            <div class="team-section">
+                <div class="team-section-title">
+                    <span>📋 PRODUCT TEAM</span>
+                </div>
+                <div id="productTeamList"></div>
+            </div>
+            
+            <div class="team-section">
+                <div class="team-section-title">
+                    <span>⚡ SCRUM TEAM</span>
+                </div>
+                <div id="scrumTeamList"></div>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Board -->
+        <div class="board-panel">
+            <div class="board-header">
+                <h1>
+                    <span>📋 SCRUM BOARD</span>
+                </h1>
+                <div class="sprint-info">
+                    <span class="sprint-name">🚀 Sprint 24</span>
+                    <span class="sprint-dates">Feb 17 - Mar 3, 2026</span>
+                </div>
+            </div>
+            
+            <div class="board-columns">
+                <!-- TO DO Column -->
+                <div class="column" id="todoColumn" ondrop="drop(event, 'todo')" ondragover="allowDrop(event)">
+                    <div class="column-header">
+                        <div class="column-title">
+                            <span>📝</span>
+                            <h3>To Do</h3>
+                        </div>
+                        <span class="column-count" id="todoCount">0</span>
+                    </div>
+                    
+                    <div class="task-list" id="todoList" ondrop="drop(event, 'todo')" ondragover="allowDrop(event)"></div>
+                    
+                    <div class="add-task">
+                        <input type="text" id="todoInput" placeholder="Task title...">
+                        <select id="todoPriority">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                        <select id="todoAssignee">
+                            <option value="">Assign to...</option>
+                        </select>
+                        <button onclick="addTask('todo')">+ Create Task</button>
+                    </div>
+                </div>
+                
+                <!-- IN PROGRESS Column -->
+                <div class="column" id="progressColumn" ondrop="drop(event, 'progress')" ondragover="allowDrop(event)">
+                    <div class="column-header">
+                        <div class="column-title">
+                            <span>⚡</span>
+                            <h3>In Progress</h3>
+                        </div>
+                        <span class="column-count" id="progressCount">0</span>
+                    </div>
+                    
+                    <div class="task-list" id="progressList" ondrop="drop(event, 'progress')" ondragover="allowDrop(event)"></div>
+                    
+                    <div class="add-task">
+                        <input type="text" id="progressInput" placeholder="Task title...">
+                        <select id="progressPriority">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                        <select id="progressAssignee">
+                            <option value="">Assign to...</option>
+                        </select>
+                        <button onclick="addTask('progress')">+ Create Task</button>
+                    </div>
+                </div>
+                
+                <!-- IN REVIEW Column -->
+                <div class="column" id="reviewColumn" ondrop="drop(event, 'review')" ondragover="allowDrop(event)">
+                    <div class="column-header">
+                        <div class="column-title">
+                            <span>🔍</span>
+                            <h3>In Review</h3>
+                        </div>
+                        <span class="column-count" id="reviewCount">0</span>
+                    </div>
+                    
+                    <div class="task-list" id="reviewList" ondrop="drop(event, 'review')" ondragover="allowDrop(event)"></div>
+                    
+                    <div class="add-task">
+                        <input type="text" id="reviewInput" placeholder="Task title...">
+                        <select id="reviewPriority">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                        <select id="reviewAssignee">
+                            <option value="">Assign to...</option>
+                        </select>
+                        <button onclick="addTask('review')">+ Create Task</button>
+                    </div>
+                </div>
+                
+                <!-- DONE Column -->
+                <div class="column" id="doneColumn" ondrop="drop(event, 'done')" ondragover="allowDrop(event)">
+                    <div class="column-header">
+                        <div class="column-title">
+                            <span>✅</span>
+                            <h3>Done</h3>
+                        </div>
+                        <span class="column-count" id="doneCount">0</span>
+                    </div>
+                    
+                    <div class="task-list" id="doneList" ondrop="drop(event, 'done')" ondragover="allowDrop(event)"></div>
+                    
+                    <div class="add-task">
+                        <input type="text" id="doneInput" placeholder="Task title...">
+                        <select id="donePriority">
+                            <option value="high">🔴 High</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                        <select id="doneAssignee">
+                            <option value="">Assign to...</option>
+                        </select>
+                        <button onclick="addTask('done')">+ Create Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Team members data with random names
+        const teamMembers = {
+            developers: [
+                { id: 'dev1', name: 'MAHFUZ AHMED', role: 'Developer', avatar: 'AC', roleType: 'dev' },
+                { id: 'dev2', name: 'AL AMIN', role: 'Developer', avatar: 'SJ', roleType: 'dev' },
+                { id: 'dev3', name: 'SHAH', role: 'Developer', avatar: 'MR', roleType: 'dev' }
+            ],
+            qa: [
+                { id: 'qa1', name: 'SAIDUR ALAM', role: 'QA Engineer', avatar: 'EW', roleType: 'qa' },
+                { id: 'qa2', name: 'DIPU', role: 'QA Engineer', avatar: 'DK', roleType: 'qa' }
+            ],
+            productTeam: [
+                { id: 'po1', name: 'SHAMIM', role: 'Product Owner', avatar: 'MS', roleType: 'po' },
+                { id: 'ba1', name: 'MITUL', role: 'Business Analyst', avatar: 'PP', roleType: 'ba' }
+            ],
+            scrumTeam: [
+                { id: 'sm1', name: 'ASHAD', role: 'Scrum Master', avatar: 'LA', roleType: 'sm' }
+            ]
+        };
+
+        // Tasks data
+        let tasks = {
+            todo: [
+                { id: 'TASK-101', text: 'Design database schema for user profiles', priority: 'high', assignee: 'dev1', date: '2026-02-17' },
+                { id: 'TASK-102', text: 'Create API documentation', priority: 'medium', assignee: 'dev2', date: '2026-02-17' },
+                { id: 'TASK-103', text: 'Update dependency versions', priority: 'low', assignee: null, date: '2026-02-17' }
+            ],
+            progress: [
+                { id: 'TASK-104', text: 'Implement authentication middleware', priority: 'high', assignee: 'dev3', date: '2026-02-16' }
+            ],
+            review: [
+                { id: 'TASK-105', text: 'Code review for payment module', priority: 'high', assignee: 'qa1', date: '2026-02-16' },
+                { id: 'TASK-106', text: 'Test user registration flow', priority: 'medium', assignee: 'qa2', date: '2026-02-15' }
+            ],
+            done: [
+                { id: 'TASK-107', text: 'Setup project repository', priority: 'high', assignee: 'dev1', date: '2026-02-14' }
+            ]
+        };
+
+        let nextTaskId = 108;
+
+        // Initialize the board
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTeamMembers();
+            populateAssigneeDropdowns();
+            renderAll();
+        });
+
+        // Render team members in left panel
+        function renderTeamMembers() {
+            const developersList = document.getElementById('developersList');
+            const qaList = document.getElementById('qaList');
+            const productTeamList = document.getElementById('productTeamList');
+            const scrumTeamList = document.getElementById('scrumTeamList');
+            
+            developersList.innerHTML = teamMembers.developers.map(member => createTeamMemberHTML(member)).join('');
+            qaList.innerHTML = teamMembers.qa.map(member => createTeamMemberHTML(member)).join('');
+            productTeamList.innerHTML = teamMembers.productTeam.map(member => createTeamMemberHTML(member)).join('');
+            scrumTeamList.innerHTML = teamMembers.scrumTeam.map(member => createTeamMemberHTML(member)).join('');
+            
+            document.getElementById('teamCount').innerHTML = `${getTotalMembers()} members`;
+        }
+
+        function createTeamMemberHTML(member) {
+            const taskCount = getMemberTaskCount(member.id);
+            return `
+                <div class="team-member" draggable="true" ondragstart="dragTeamMember(event, '${member.id}')">
+                    <div class="member-avatar">${member.avatar}</div>
+                    <div class="member-info">
+                        <div class="member-name">${member.name}</div>
+                        <div class="member-role">
+                            <span class="role-badge role-${member.roleType}">${member.role}</span>
+                        </div>
+                    </div>
+                    <div class="member-task-count">${taskCount}</div>
+                </div>
+            `;
+        }
+
+        function getMemberTaskCount(memberId) {
+            let count = 0;
+            for (let column in tasks) {
+                count += tasks[column].filter(task => task.assignee === memberId).length;
+            }
+            return count;
+        }
+
+        function getTotalMembers() {
+            return teamMembers.developers.length + teamMembers.qa.length + 
+                   teamMembers.productTeam.length + teamMembers.scrumTeam.length;
+        }
+
+        // Populate assignee dropdowns
+        function populateAssigneeDropdowns() {
+            const allMembers = [
+                ...teamMembers.developers,
+                ...teamMembers.qa,
+                ...teamMembers.productTeam,
+                ...teamMembers.scrumTeam
+            ];
+            
+            const dropdowns = [
+                'todoAssignee', 'progressAssignee', 'reviewAssignee', 'doneAssignee'
+            ];
+            
+            dropdowns.forEach(dropdownId => {
+                const select = document.getElementById(dropdownId);
+                select.innerHTML = '<option value="">Unassigned</option>' + 
+                    allMembers.map(member => 
+                        `<option value="${member.id}">${member.name} (${member.role})</option>`
+                    ).join('');
+            });
+        }
+
+        // Drag and drop functions
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function dragTeamMember(ev, memberId) {
+            ev.dataTransfer.setData('text/plain', `member:${memberId}`);
+        }
+
+        function drop(ev, targetColumn) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData('text/plain');
+            
+            if (data.startsWith('member:')) {
+                // Assign member to task (you'd need to implement task selection)
+                const memberId = data.split(':')[1];
+                alert('Click on a task to assign this team member');
+            } else {
+                // Handle task movement
+                const taskData = JSON.parse(data);
+                moveTask(taskData.id, taskData.column, targetColumn);
+            }
+        }
+
+        // Add new task
+        function addTask(column) {
+            const input = document.getElementById(column + 'Input');
+            const priority = document.getElementById(column + 'Priority').value;
+            const assignee = document.getElementById(column + 'Assignee').value;
+            const taskText = input.value.trim();
+            
+            if (!taskText) {
+                alert('Please enter a task title');
+                return;
+            }
+            
+            const task = {
+                id: `TASK-${nextTaskId++}`,
+                text: taskText,
+                priority: priority,
+                assignee: assignee || null,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            tasks[column].push(task);
+            input.value = '';
+            renderAll();
+        }
+
+        // Move task between columns
+        function moveTask(taskId, fromColumn, toColumn) {
+            const taskIndex = tasks[fromColumn].findIndex(t => t.id === taskId);
+            if (taskIndex === -1) return;
+            
+            const task = tasks[fromColumn][taskIndex];
+            tasks[fromColumn].splice(taskIndex, 1);
+            tasks[toColumn].push(task);
+            renderAll();
+        }
+
+        // Delete task
+        function deleteTask(taskId, column) {
+            if (confirm('Delete this task?')) {
+                tasks[column] = tasks[column].filter(t => t.id !== taskId);
+                renderAll();
+            }
+        }
+
+        // Get member name by ID
+        function getMemberName(memberId) {
+            if (!memberId) return null;
+            const allMembers = [
+                ...teamMembers.developers,
+                ...teamMembers.qa,
+                ...teamMembers.productTeam,
+                ...teamMembers.scrumTeam
+            ];
+            const member = allMembers.find(m => m.id === memberId);
+            return member ? member.name : null;
+        }
+
+        // Get member avatar by ID
+        function getMemberAvatar(memberId) {
+            if (!memberId) return null;
+            const allMembers = [
+                ...teamMembers.developers,
+                ...teamMembers.qa,
+                ...teamMembers.productTeam,
+                ...teamMembers.scrumTeam
+            ];
+            const member = allMembers.find(m => m.id === memberId);
+            return member ? member.avatar : null;
+        }
+
+        // Render all columns
+        function renderAll() {
+            renderColumn('todo');
+            renderColumn('progress');
+            renderColumn('review');
+            renderColumn('done');
+            renderTeamMembers(); // Update task counts
+        }
+
+        // Render specific column
+        function renderColumn(column) {
+            const listElement = document.getElementById(column + 'List');
+            const countElement = document.getElementById(column + 'Count');
+            
+            if (tasks[column].length === 0) {
+                listElement.innerHTML = '<div class="empty-message">✨ No tasks</div>';
+            } else {
+                listElement.innerHTML = tasks[column].map(task => {
+                    const assigneeName = getMemberName(task.assignee);
+                    const assigneeAvatar = getMemberAvatar(task.assignee);
+                    
+                    return `
+                        <div class="task-card" draggable="true" ondragstart="dragTask(event, '${task.id}', '${column}')">
+                            <div class="task-header">
+                                <span class="task-id">${task.id}</span>
+                                <span class="task-priority">
+                                    ${task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢'}
+                                </span>
+                            </div>
+                            <div class="task-title">${task.text}</div>
+                            ${assigneeName ? `
+                                <div class="task-assignee">
+                                    <div class="assignee-avatar">${assigneeAvatar}</div>
+                                    <span class="assignee-name">${assigneeName}</span>
+                                </div>
+                            ` : ''}
+                            <div class="task-meta">
+                                <span class="task-date">📅 ${task.date}</span>
+                            </div>
+                            <div class="task-actions">
+                                ${column !== 'done' ? `
+                                    <button class="task-btn btn-move" onclick="moveTask('${task.id}', '${column}', '${getNextColumn(column)}')">
+                                        → ${getNextColumnName(column)}
+                                    </button>
+                                ` : ''}
+                                <button class="task-btn btn-delete" onclick="deleteTask('${task.id}', '${column}')">✕</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            countElement.textContent = tasks[column].length;
+        }
+
+        function dragTask(ev, taskId, column) {
+            ev.dataTransfer.setData('text/plain', JSON.stringify({
+                id: taskId,
+                column: column
+            }));
+        }
+
+        function getNextColumn(current) {
+            const columns = ['todo', 'progress', 'review', 'done'];
+            const index = columns.indexOf(current);
+            return index < columns.length - 1 ? columns[index + 1] : current;
+        }
+
+        function getNextColumnName(column) {
+            const names = {
+                'todo': 'Progress',
+                'progress': 'Review',
+                'review': 'Done',
+                'done': 'Done'
+            };
+            return names[column];
+        }
+    </script>
+</body>
+</html>
