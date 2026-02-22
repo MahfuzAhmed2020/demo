@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spring Boot Demo</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            margin-top: 50px;
+            background: #f4f4f4;
+        }
+        button {
+            padding: 10px 20px;
+            background: #b38918;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input {
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>API Test</h2>
+
+
+<input type="text" id="name" placeholder="Enter name">
+<input type="text" id="phone" placeholder="Enter phone">
+<input type="text" id="zip" placeholder="Enter zip">
+
+<button onclick="send()">Send</button>
+
+<p id="result"></p>
+
+<h2>Product List</h2>
+<ul id="productList"></ul>
+
+
+<script>
+
+
+function send() {
+    const data = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        zip: document.getElementById("zip").value
+    };
+
+    fetch("http://localhost:8080/api/greet", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(response => {
+        document.getElementById("result").innerText = response;
+    })
+    .catch(err => console.error(err));
+}
+
+const products = [
+    { name: "Laptop", price: 800 },
+    { name: "Phone", price: 500 },
+    { name: "Tablet", price: 300 },
+    { name: "Headphones", price: 100 },
+    { name: "Mouse", price: 50 }
+];
+
+function loadProducts() {
+    const list = document.getElementById("productList");
+    list.innerHTML = "";
+
+    products.forEach(product => {
+        const li = document.createElement("li");
+        li.innerText = product.name + " - $" + product.price;
+        list.appendChild(li);
+    });
+}
+
+loadProducts();
+
+
+
+// function loadProducts() {
+//     fetch("http://localhost:8080/api/products")
+//         .then(res => res.json())
+//         .then(data => {
+//             const list = document.getElementById("productList");
+//             list.innerHTML = "";
+
+//             data.forEach(product => {
+//                 const li = document.createElement("li");
+//                 li.innerText = product.name + " - $" + product.price;
+//                 list.appendChild(li);
+//             });
+//         });
+// }
+
+// loadProducts();
+
+</script>
+
+
+<!-- <script>
+function send() {
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+    const zip = document.getElementById("zip").value;
+
+
+
+    fetch("http://localhost:8080/api/greet", {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/plain"
+        },
+        body: name,phone,zip
+    })
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("result").innerText = data;
+    });
+}
+</script> -->
+
+</body>
+</html>
