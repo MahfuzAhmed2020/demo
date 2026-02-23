@@ -1,0 +1,166 @@
+<!--http://localhost:8080/index.html -->
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+<head>
+    <title>Weather Home</title>
+<style>
+
+
+/* --------------------------for weather API WEBSERVICES--------------------------------*/
+/* Weather Section */
+.weather-section {
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Input + Button container */
+.weather-search {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;   /* Important for responsiveness */
+    margin-bottom: 20px;
+}
+
+/* Input field */
+.weather-search input {
+    padding: 12px;
+    width: 250px;
+    max-width: 90%;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+/* Button */
+.weather-search button {
+    padding: 12px 18px;
+    border-radius: 8px;
+    border: none;
+    background-color: #0059ff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.weather-search button:hover {
+    background-color: #92b300;
+}
+
+/* Weather Card */
+.weather-card {
+    margin: auto;
+    margin-top: 20px;
+    padding: 20px;
+    width: 320px;
+    max-width: 95%;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: none; /* hidden until data loads */
+}
+
+/* Responsive for small screens */
+@media (max-width: 600px) {
+
+    .weather-search {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .weather-search input,
+    .weather-search button {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .weather-card {
+        width: 100%;
+    }
+}
+
+/* --------------------------for weather API WEBSERVICES ENDS HERE--------------------------------*/
+</style>
+
+
+
+</head>
+<body>
+    <h1>Weather_Spring Boot Running Successfully 🎉</h1>
+
+<!-- to get the WEATHER webservices from -->
+<div class="weather-section">
+    <h2>🌤 Weather Update</h2>
+
+    <div class="weather-search">
+        <input type="text" id="weatherInput"
+               placeholder="Enter city or zipcode">
+        <button onclick="getWeather()">Get Weather</button>
+    </div>
+
+    <div id="weatherResult" class="weather-card"></div>
+</div>
+<!-- end-->
+<script>
+/* --------------------------for weather API WEBSERVICES--------------------------------*/
+function getWeather() {
+
+    const query = document.getElementById("weatherInput").value;
+
+    if (!query) {
+        alert("Enter city or zipcode");
+        return;
+    }
+
+    fetch(`http://localhost:8080/api/weather?query=${query}`)
+        .then(response => response.json())
+        .then(data => {
+
+            const card = document.getElementById("weatherResult");
+            card.style.display = "block";
+
+            card.innerHTML = `
+                <h3>${data.name}</h3>
+                <p>🌡 Temperature: ${data.main.temp} °F</p>
+                <p>💧 Humidity: ${data.main.humidity}%</p>
+                <p>☁ Condition: ${data.weather[0].description}</p>
+                <p>🌬 Wind: ${data.wind.speed} m/s</p>
+            `;
+        })
+        .catch(error => {
+            alert("City/Zip not found");
+        });
+}
+/* --------------------------for weather API WEBSERVICES ENDS HERE--------------------------------*/
+
+
+</script>
+
+  <!--<a href="register.html" style="color: rgb(197, 95, 0);">Go to Register Page</a>--> 
+<a href="register.html" style="color: white; background-color: #007BFF; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
+  Go to Register Page
+</a>
+
+<a href="register.html"
+   style="
+      position: fixed;
+      bottom: 20px;       /* distance from bottom */
+      left: 50%;          /* center horizontally */
+      transform: translateX(-50%);
+      color: white;
+      background-color: #007BFF;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+   ">
+  Go to Register Page
+</a>
+</body>
+</html>
