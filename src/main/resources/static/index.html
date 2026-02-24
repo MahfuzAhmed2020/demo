@@ -84,6 +84,20 @@
 }
 
 /* --------------------------for weather API WEBSERVICES ENDS HERE--------------------------------*/
+
+/* Flight Card */
+.flight-card {
+    margin: auto;
+    margin-top: 20px;
+    padding: 20px;
+    width: 400px;
+    max-width: 95%;
+    background: linear-gradient(135deg, #ff9966, #ff5e62);
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: none;
+}
 </style>
 
 
@@ -105,14 +119,25 @@
     <div id="weatherResult" class="weather-card"></div>
 </div>
 <!-- end-->
+
+<h1>Check Ticket price</h1>
+<div>
+    <input type="text" id="from" placeholder="From (e.g. JFK)">
+    <input type="text" id="to" placeholder="To (e.g. LAX)">
+    <input type="date" id="date">
+    <button onclick="getFlight()">Check Price</button>
+</div>
+
+<div id="flightResult" class="flight-card"></div>
 <script>
 /* --------------------------for weather API WEBSERVICES--------------------------------*/
 function getWeather() {
 
     const query = document.getElementById("weatherInput").value;
+     const card = document.getElementById("weatherResult");
 
     if (!query) {
-        alert("Enter city or zipcode");
+       showError("Please enter city or zipcode.");
         return;
     }
 
@@ -132,18 +157,95 @@ function getWeather() {
             `;
         })
         .catch(error => {
-            alert("City/Zip not found");
+            showError("❌ City or Zipcode not found.❌");
         });
+}
+
+
+function showError(message) {
+
+    const card = document.getElementById("weatherResult");
+
+    card.style.display = "block";
+    card.innerHTML = `
+        <div style="
+            background-color: #00f2fe;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        ">
+            ${message}
+        </div>
+    `;
 }
 /* --------------------------for weather API WEBSERVICES ENDS HERE--------------------------------*/
 
+/*FLIGHT*/
+function getFlight() {
+
+    const from = document.getElementById("from").value;
+    const to = document.getElementById("to").value;
+    const date = document.getElementById("date").value;
+
+    const card = document.getElementById("flightResult");
+
+    if (!from || !to || !date) {
+        showFlightError("Please fill all fields.");
+        return;
+    }
+
+    fetch(`http://localhost:8080/api/flight?from=${from}&to=${to}&date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+
+            card.style.display = "block";
+
+            if (!data.data || data.data.length === 0) {
+                showFlightError("No flights found.");
+                return;
+            }
+
+            const offer = data.data[0];
+            const price = offer.price.total;
+            const currency = offer.price.currency;
+
+            card.innerHTML = `
+                <h3>✈ Flight Found</h3>
+                <p><strong>From:</strong> ${from}</p>
+                <p><strong>To:</strong> ${to}</p>
+                <p><strong>Date:</strong> ${date}</p>
+                <h2>💲 ${price} ${currency}</h2>
+            `;
+        })
+        .catch(error => {
+            showFlightError("Error retrieving flight data.");
+        });
+}
+
+function showFlightError(message) {
+
+    const card = document.getElementById("flightResult");
+
+    card.style.display = "block";
+    card.innerHTML = `
+        <div style="
+            background-color: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        ">
+            ${message}
+        </div>
+    `;
+}
 
 </script>
 
   <!--<a href="register.html" style="color: rgb(197, 95, 0);">Go to Register Page</a>--> 
-<a href="register.html" style="color: white; background-color: #007BFF; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
+<!--<a href="register.html" style="color: white; background-color: #007BFF; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
   Go to Register Page
-</a>
+</a>-->
 
 <a href="register.html"
    style="

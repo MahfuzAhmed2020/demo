@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrate · Attendance + Todos</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { background: #eef2f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .app-container { max-width: 1200px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+        .card { background: white; border-radius: 32px; box-shadow: 0 20px 35px -8px rgba(0,20,45,0.2); padding: 28px 26px; transition: 0.2s; }
+        .full-width { grid-column: 1 / -1; }
+        h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 20px 0; color: #0b1f3b; display: flex; align-items: center; gap: 10px; border-bottom: 3px solid #2563eb; padding-bottom: 12px; }
+        h2 span { background: #dbeafe; font-size: 0.9rem; padding: 4px 14px; border-radius: 40px; color: #1e40af; }
+        input, button { border-radius: 60px; border: 1px solid #ccd9f0; padding: 12px 20px; font-size: 1rem; background: white; width: 100%; margin-bottom: 10px; }
+        button { background: #1d4ed8; color: white; font-weight: 600; border: none; cursor: pointer; transition: 0.15s; box-shadow: 0 6px 14px rgba(29,78,216,0.3); }
+        button:hover { background: #1e3bbf; transform: scale(1.01); }
+        .btn-outline { background: #f1f5f9; color: #1e293b; box-shadow: none; border: 1px solid #b9c7e0; }
+        .btn-outline:hover { background: #e6edf8; }
+        .flex-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .user-greeting { background: #dbeafe; border-radius: 60px; padding: 14px 22px; display: flex; justify-content: space-between; font-weight: 500; margin: 16px 0 10px; border: 1px solid #a9c5f9; }
+        .attendance-panel { background: #f8fafc; border-radius: 24px; padding: 16px; margin: 20px 0 10px; max-height: 280px; overflow-y: auto; border: 1px solid #bfd6fe; }
+        .attendance-item { background: white; padding: 12px 18px; border-radius: 50px; margin-bottom: 8px; border-left: 5px solid #2563eb; font-size: 0.95rem; box-shadow: 0 2px 5px #d9e2f5; }
+        .todo-list { background: #f1f4f9; border-radius: 28px; padding: 22px; margin-top: 16px; max-height: 400px; overflow-y: auto; border: 1px solid #b3c6e2; }
+        .todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: white; border-radius: 60px; margin-bottom: 8px; border: 1px solid #e0e7f5; }
+        .badge { background: #2563eb10; border-radius: 40px; padding: 6px 14px; font-size: 0.8rem; font-weight: 600; color: #1e3b8a; border: 1px solid #a2befc; }
+        .status-dot { width: 12px; height: 12px; border-radius: 20px; display: inline-block; margin-right: 8px; }
+        .completed { background: #22c55e; }
+        .pending { background: #f97316; }
+        hr { border: none; height: 1px; background: #d1ddf6; margin: 24px 0; }
+        .error-msg { color: #b91c1c; font-size: 0.9rem; margin: 4px 0; }
+        .success-msg { color: #166534; }
+        .footer-note { color: #4b5b7c; font-size: 0.85rem; margin-top: 18px; text-align: center; }
+        .stat-badge { background: #1e293b; color: white; border-radius: 60px; padding: 3px 15px; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- LEFT CARD: ATTENDANCE APP (identical behaviour but integrated) -->
+    <div class="card">
+        <h2>🧑‍💼 BioAttendance <span>in‑memory</span></h2>
+        <!-- signup -->
+        <h3 style="margin: 0 0 8px;">📝 Signup</h3>
+        <input type="text" id="name" placeholder="full name" value="">
+        <input type="email" id="email" placeholder="email" value="">
+        <input type="password" id="password" placeholder="password" value="">
+        <button onclick="signup()">Create account</button>
+        <p id="signup-msg" class="error-msg"></p>
+
+        <!-- signin -->
+        <h3 style="margin: 20px 0 8px;">🔐 Sign In</h3>
+        <input type="email" id="login-email" placeholder="email" value="">
+        <input type="password" id="login-password" placeholder="password" value="">
+        <button onclick="signin()">Log in</button>
+        <p id="signin-msg" class="error-msg"></p>
+
+        <!-- user panel (dynamic) -->
+        <div id="userPanel" style="display: none;" class="user-greeting">
+            <span id="greetingName"></span>
+            <span class="badge">active</span>
+        </div>
+
+        <!-- attendance actions -->
+        <div class="flex-row" style="margin-top: 12px;">
+            <button onclick="biometricCheckIn()" style="flex:1;">✅ Check In</button>
+            <button onclick="biometricCheckOut()" style="flex:1; background:#475569;">⬅️ Check Out</button>
+        </div>
+        <div class="flex-row">
+            <button onclick="viewAttendance()" style="background:#0b6b4c;">📋 View my log</button>
+            <button onclick="logout()" style="background:#b45309;">🚪 Logout</button>
+        </div>
+
+        <!-- attendance display -->
+        <div class="attendance-panel" id="attendance-list">
+            <small style="color:#5e6f94;">⏱️ Your check-ins will appear here</small>
+        </div>
+        <p style="font-size:0.8rem; color:#485b7e;">⬇️ use buttons above to track attendance</p>
+    </div>
+
+    <!-- RIGHT CARD: TODO DATA (the massive JSON you provided) + integration controls -->
+    <div class="card">
+        <h2>📋 Todo dataset <span>200 items</span></h2>
+        <p style="margin-top: -10px; margin-bottom: 20px;">Load & link with your attendance app</p>
+
+        <!-- control buttons -->
+        <button onclick="loadProvidedTodos()" style="background:#7e22ce;">📥 Load embedded todos</button>
+        <div class="flex-row">
+            <button onclick="filterMyTodos()" class="btn-outline">🔍 Show my userId todos (logged user)</button>
+            <button onclick="resetTodoDisplay()" class="btn-outline">🔄 Show all</button>
+        </div>
+        <div style="margin: 8px 0 0; display: flex; gap: 10px; align-items: center;">
+            <span>🔢 Filter by userId:</span>
+            <input type="number" id="userIdFilter" min="1" max="10" value="1" style="width: 90px; display: inline-block; margin:0;">
+            <button onclick="filterByUserId()" class="btn-outline" style="width: auto; padding: 8px 20px;">Go</button>
+        </div>
+
+        <!-- todo display area -->
+        <div id="todoContainer" class="todo-list">
+            <span class="badge">⚠️ Click "Load embedded todos" to start</span>
+        </div>
+
+        <!-- extra: mapping info -->
+        <hr>
+        <h3 style="font-size:1.2rem;">🔗 integration ideas</h3>
+        <ul style="color: #1e3a6b;">
+            <li>Use todos as "tasks" after check-in</li>
+            <li>Filter by userId matches logged user?</li>
+            <li>Mark completed based on attendance?</li>
+            <li>You have full JSON in `window.providedTodos`</li>
+        </ul>
+        <div class="footer-note">⚡ refresh resets everything</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ---------- Attendance app state (in‑memory) ----------
+    window.users = window.users || [];
+    window.loggedInUser = window.loggedInUser || null;   // { name, email, password, biometricRegistered }
+    window.attendance = window.attendance || [];
+
+    // ---------- The massive todo list (exactly as given) ----------
+    const PROVIDED_TODOS = [ { "userId": 1, "id": 1, "title": "delectus aut autem", "completed": false }, 
+    { "userId": 1, "id": 2, "title": "quis ut nam facilis et officia qui", "completed": false },
+     { "userId": 1, "id": 3, "title": "fugiat veniam minus", "completed": false }, 
+     { "userId": 1, "id": 4, "title": "et porro tempora", "completed": true }, 
+     { "userId": 1, "id": 5, "title": "laboriosam mollitia et enim quasi adipisci quia provident illum", "completed": false }, 
+     { "userId": 1, "id": 6, "title": "qui ullam ratione quibusdam voluptatem quia omnis", "completed": false }, { "userId": 1, "id": 7, "title": "illo expedita consequatur quia in", "completed": false },
+      { "userId": 1, "id": 8, "title": "quo adipisci enim quam ut ab", "completed": true }, { "userId": 1, "id": 9, "title": "molestiae perspiciatis ipsa", "completed": false }, 
+      { "userId": 1, "id": 10, "title": "illo est ratione doloremque quia maiores aut", "completed": true }, { "userId": 1, "id": 11, "title": "vero rerum temporibus dolor", "completed": true }, 
+      { "userId": 1, "id": 12, "title": "ipsa repellendus fugit nisi", "completed": true }, { "userId": 1, "id": 13, "title": "et doloremque nulla", "completed": false }, 
+      { "userId": 1, "id": 14, "title": "repellendus sunt dolores architecto voluptatum", "completed": true }, { "userId": 1, "id": 15, "title": "ab voluptatum amet voluptas", "completed": true }, 
+      { "userId": 1, "id": 16, "title": "accusamus eos facilis sint et aut voluptatem", "completed": true }, { "userId": 1, "id": 17, "title": "quo laboriosam deleniti aut qui", "completed": true }, 
+      { "userId": 1, "id": 18, "title": "dolorum est consequatur ea mollitia in culpa", "completed": false }, { "userId": 1, "id": 19, "title": "molestiae ipsa aut voluptatibus pariatur dolor nihil", "completed": true },
+       { "userId": 1, "id": 20, "title": "ullam nobis libero sapiente ad optio sint", "completed": true }, { "userId": 2, "id": 21, "title": "suscipit repellat esse quibusdam voluptatem incidunt", "completed": false },
+        { "userId": 2, "id": 22, "title": "distinctio vitae autem nihil ut molestias quo", "completed": true }, { "userId": 2, "id": 23, "title": "et itaque necessitatibus maxime molestiae qui quas velit", "completed": false }, 
+        { "userId": 2, "id": 24, "title": "adipisci non ad dicta qui amet quaerat doloribus ea", "completed": false }, { "userId": 2, "id": 25, "title": "voluptas quo tenetur perspiciatis explicabo natus", "completed": true }, 
+        { "userId": 2, "id": 26, "title": "aliquam aut quasi", "completed": true }, { "userId": 2, "id": 27, "title": "veritatis pariatur delectus", "completed": true }, 
+        { "userId": 2, "id": 28, "title": "nesciunt totam sit blanditiis sit", "completed": false }, { "userId": 2, "id": 29, "title": "laborum aut in quam", "completed": false }, 
+        { "userId": 2, "id": 30, "title": "nemo perspiciatis repellat ut dolor libero commodi blanditiis omnis", "completed": true }, 
+        { "userId": 2, "id": 31, "title": "repudiandae totam in est sint facere fuga", "completed": false }, { "userId": 2, "id": 32, "title": "earum doloribus ea doloremque quis", "completed": false },
+         { "userId": 2, "id": 33, "title": "sint sit aut vero", "completed": false }, { "userId": 2, "id": 34, "title": "porro aut necessitatibus eaque distinctio", "completed": false },
+          { "userId": 2, "id": 35, "title": "repellendus veritatis molestias dicta incidunt", "completed": true }, { "userId": 2, "id": 36, "title": "excepturi deleniti adipisci voluptatem et neque optio illum ad", "completed": true }, { "userId": 2, "id": 37, "title": "sunt cum tempora", "completed": false }, { "userId": 2, "id": 38, "title": "totam quia non", "completed": false }, { "userId": 2, "id": 39, "title": "doloremque quibusdam asperiores libero corrupti illum qui omnis", "completed": false }, { "userId": 2, "id": 40, "title": "totam atque quo nesciunt", "completed": true }, 
+          { "userId": 3, "id": 41, "title": "aliquid amet impedit consequatur aspernatur placeat eaque fugiat suscipit", "completed": false }, 
+          { "userId": 3, "id": 42, "title": "rerum perferendis error quia ut eveniet", "completed": false }, { "userId": 3, "id": 43, "title": "tempore ut sint quis recusandae", "completed": true }, { "userId": 3, "id": 44, "title": "cum debitis quis accusamus doloremque ipsa natus sapiente omnis", "completed": true }, { "userId": 3, "id": 45, "title": "velit soluta adipisci molestias reiciendis harum", "completed": false }, { "userId": 3, "id": 46, "title": "vel voluptatem repellat nihil placeat corporis", "completed": false }, { "userId": 3, "id": 47, "title": "nam qui rerum fugiat accusamus", "completed": false }, { "userId": 3, "id": 48, "title": "sit reprehenderit omnis quia", "completed": false }, { "userId": 3, "id": 49, "title": "ut necessitatibus aut maiores debitis officia blanditiis velit et", "completed": false }, { "userId": 3, "id": 50, "title": "cupiditate necessitatibus ullam aut quis dolor voluptate", "completed": true }, { "userId": 3, "id": 51, "title": "distinctio exercitationem ab doloribus", "completed": false }, { "userId": 3, "id": 52, "title": "nesciunt dolorum quis recusandae ad pariatur ratione", "completed": false }, { "userId": 3, "id": 53, "title": "qui labore est occaecati recusandae aliquid quam", "completed": false }, 
+          { "userId": 3, "id": 54, "title": "quis et est ut voluptate quam dolor", "completed": true }, { "userId": 3, "id": 55, "title": "voluptatum omnis minima qui occaecati provident nulla voluptatem ratione", "completed": true }, { "userId": 3, "id": 56, "title": "deleniti ea temporibus enim", "completed": true }, { "userId": 3, "id": 57, "title": "pariatur et magnam ea doloribus similique voluptatem rerum quia", "completed": false }, { "userId": 3, "id": 58, "title": "est dicta totam qui explicabo doloribus qui dignissimos", "completed": false }, { "userId": 3, "id": 59, "title": "perspiciatis velit id laborum placeat iusto et aliquam odio", "completed": false }, { "userId": 3, "id": 60, "title": "et sequi qui architecto ut adipisci", "completed": true }, { "userId": 4, "id": 61, "title": "odit optio omnis qui sunt", "completed": true }, { "userId": 4, "id": 62, "title": "et placeat et tempore aspernatur sint numquam", "completed": false }, { "userId": 4, "id": 63, "title": "doloremque aut dolores quidem fuga qui nulla", "completed": true }, { "userId": 4, "id": 64, "title": "voluptas consequatur qui ut quia magnam nemo esse", "completed": false }, 
+          { "userId": 4, "id": 65, "title": "fugiat pariatur ratione ut asperiores necessitatibus magni", "completed": false }, { "userId": 4, "id": 66, "title": "rerum eum molestias autem voluptatum sit optio", "completed": false }, { "userId": 4, "id": 67, "title": "quia voluptatibus voluptatem quos similique maiores repellat", "completed": false }, { "userId": 4, "id": 68, "title": "aut id perspiciatis voluptatem iusto", "completed": false }, { "userId": 4, "id": 69, "title": "doloribus sint dolorum ab adipisci itaque dignissimos aliquam suscipit", "completed": false }, { "userId": 4, "id": 70, "title": "ut sequi accusantium et mollitia delectus sunt", "completed": false }, { "userId": 4, "id": 71, "title": "aut velit saepe ullam", "completed": false }, { "userId": 4, "id": 72, "title": "praesentium facilis facere quis harum voluptatibus voluptatem eum", "completed": false }, { "userId": 4, "id": 73, "title": "sint amet quia totam corporis qui exercitationem commodi", "completed": true }, { "userId": 4, "id": 74, "title": "expedita tempore nobis eveniet laborum maiores", "completed": false }, { "userId": 4, "id": 75, "title": "occaecati adipisci est possimus totam", "completed": false }, { "userId": 4, "id": 76, "title": "sequi dolorem sed", "completed": true }, { "userId": 4, "id": 77, "title": "maiores aut nesciunt delectus exercitationem vel assumenda eligendi at", "completed": false }, 
+          { "userId": 4, "id": 78, "title": "reiciendis est magnam amet nemo iste recusandae impedit quaerat", "completed": false }, { "userId": 4, "id": 79, "title": "eum ipsa maxime ut", "completed": true }, { "userId": 4, "id": 80, "title": "tempore molestias dolores rerum sequi voluptates ipsum consequatur", "completed": true }, { "userId": 5, "id": 81, "title": "suscipit qui totam", "completed": true }, { "userId": 5, "id": 82, "title": "voluptates eum voluptas et dicta", "completed": false }, { "userId": 5, "id": 83, "title": "quidem at rerum quis ex aut sit quam", "completed": true }, { "userId": 5, "id": 84, "title": "sunt veritatis ut voluptate", "completed": false }, { "userId": 5, "id": 85, "title": "et quia ad iste a", "completed": true }, { "userId": 5, "id": 86, "title": "incidunt ut saepe autem", "completed": true }, { "userId": 5, "id": 87, "title": "laudantium quae eligendi consequatur quia et vero autem", "completed": true }, { "userId": 5, "id": 88, "title": "vitae aut excepturi laboriosam sint aliquam et et accusantium", "completed": false }, { "userId": 5, "id": 89, "title": "sequi ut omnis et", "completed": true }, { "userId": 5, "id": 90, "title": "molestiae nisi accusantium tenetur dolorem et", "completed": true }, { "userId": 5, "id": 91, "title": "nulla quis consequatur saepe qui id expedita", "completed": true }, { "userId": 5, "id": 92, "title": "in omnis laboriosam", "completed": true }, { "userId": 5, "id": 93, "title": "odio iure consequatur molestiae quibusdam necessitatibus quia sint", "completed": true }, { "userId": 5, "id": 94, "title": "facilis modi saepe mollitia", "completed": false }, { "userId": 5, "id": 95, "title": "vel nihil et molestiae iusto assumenda nemo quo ut", "completed": true }, { "userId": 5, "id": 96, "title": "nobis suscipit ducimus enim asperiores voluptas", "completed": false }, { "userId": 5, "id": 97, "title": "dolorum laboriosam eos qui iure aliquam", "completed": false }, { "userId": 5, "id": 98, "title": "debitis accusantium ut quo facilis nihil quis sapiente necessitatibus", "completed": true }, { "userId": 5, "id": 99, "title": "neque voluptates ratione", "completed": false }, { "userId": 5, "id": 100, "title": "excepturi a et neque qui expedita vel voluptate", "completed": false }, { "userId": 6, "id": 101, "title": "explicabo enim cumque porro aperiam occaecati minima", "completed": false }, { "userId": 6, "id": 102, "title": "sed ab consequatur", "completed": false }, { "userId": 6, "id": 103, "title": "non sunt delectus illo nulla tenetur enim omnis", "completed": false }, { "userId": 6, "id": 104, "title": "excepturi non laudantium quo", "completed": false }, { "userId": 6, "id": 105, "title": "totam quia dolorem et illum repellat voluptas optio", "completed": true }, { "userId": 6, "id": 106, "title": "ad illo quis voluptatem temporibus", "completed": true }, { "userId": 6, "id": 107, "title": "praesentium facilis omnis laudantium fugit ad iusto nihil nesciunt", "completed": false }, { "userId": 6, "id": 108, "title": "a eos eaque nihil et exercitationem incidunt delectus", "completed": true }, { "userId": 6, "id": 109, "title": "autem temporibus harum quisquam in culpa", "completed": true }, { "userId": 6, "id": 110, "title": "aut aut ea corporis", "completed": true }, { "userId": 6, "id": 111, "title": "magni accusantium labore et id quis provident", "completed": false }, { "userId": 6, "id": 112, "title": "consectetur impedit quisquam qui deserunt non rerum consequuntur eius", "completed": false }, { "userId": 6, "id": 113, "title": "quia atque aliquam sunt impedit voluptatum rerum assumenda nisi", "completed": false }, { "userId": 6, "id": 114, "title": "cupiditate quos possimus corporis quisquam exercitationem beatae", "completed": false }, { "userId": 6, "id": 115, "title": "sed et ea eum", "completed": false }, { "userId": 6, "id": 116, "title": "ipsa dolores vel facilis ut", "completed": true }, { "userId": 6, "id": 117, "title": "sequi quae est et qui qui eveniet asperiores", "completed": false }, { "userId": 6, "id": 118, "title": "quia modi consequatur vero fugiat", "completed": false }, { "userId": 6, "id": 119, "title": "corporis ducimus ea perspiciatis iste", "completed": false }, { "userId": 6, "id": 120, "title": "dolorem laboriosam vel voluptas et aliquam quasi", "completed": false }, { "userId": 7, "id": 121, "title": "inventore aut nihil minima laudantium hic qui omnis", "completed": true }, { "userId": 7, "id": 122, "title": "provident aut nobis culpa", "completed": true }, { "userId": 7, "id": 123, "title": "esse et quis iste est earum aut impedit", "completed": false }, { "userId": 7, "id": 124, "title": "qui consectetur id", "completed": false }, { "userId": 7, "id": 125, "title": "aut quasi autem iste tempore illum possimus", "completed": false }, { "userId": 7, "id": 126, "title": "ut asperiores perspiciatis veniam ipsum rerum saepe", "completed": true }, { "userId": 7, "id": 127, "title": "voluptatem libero consectetur rerum ut", "completed": true }, 
+          { "userId": 7, "id": 128, "title": "eius omnis est qui voluptatem autem", "completed": false }, { "userId": 7, "id": 129, "title": "rerum culpa quis harum", "completed": false }, { "userId": 7, "id": 130, "title": "nulla aliquid eveniet harum laborum libero alias ut unde", "completed": true }, { "userId": 7, "id": 131, "title": "qui ea incidunt quis", "completed": false }, { "userId": 7, "id": 132, "title": "qui molestiae voluptatibus velit iure harum quisquam", "completed": true }, { "userId": 7, "id": 133, "title": "et labore eos enim rerum consequatur sunt", "completed": true }, { "userId": 7, "id": 134, "title": "molestiae doloribus et laborum quod ea", "completed": false }, { "userId": 7, "id": 135, "title": "facere ipsa nam eum voluptates reiciendis vero qui", "completed": false }, { "userId": 7, "id": 136, "title": "asperiores illo tempora fuga sed ut quasi adipisci", "completed": false }, { "userId": 7, "id": 137, "title": "qui sit non", "completed": false }, { "userId": 7, "id": 138, "title": "placeat minima consequatur rem qui ut", "completed": true }, { "userId": 7, "id": 139, "title": "consequatur doloribus id possimus voluptas a voluptatem", "completed": false }, { "userId": 7, "id": 140, "title": "aut consectetur in blanditiis deserunt quia sed laboriosam", "completed": true }, { "userId": 8, "id": 141, "title": "explicabo consectetur debitis voluptates quas quae culpa rerum non", "completed": true }, { "userId": 8, "id": 142, "title": "maiores accusantium architecto necessitatibus reiciendis ea aut", "completed": true }, { "userId": 8, "id": 143, "title": "eum non recusandae cupiditate animi", "completed": false }, { "userId": 8, "id": 144, "title": "ut eum exercitationem sint", "completed": false }, { "userId": 8, "id": 145, "title": "beatae qui ullam incidunt voluptatem non nisi aliquam", "completed": false }, { "userId": 8, "id": 146, "title": "molestiae suscipit ratione nihil odio libero impedit vero totam", "completed": true }, { "userId": 8, "id": 147, "title": "eum itaque quod reprehenderit et facilis dolor autem ut", "completed": true }, { "userId": 8, "id": 148, "title": "esse quas et quo quasi exercitationem", "completed": false }, { "userId": 8, "id": 149, "title": "animi voluptas quod perferendis est", "completed": false }, { "userId": 8, "id": 150, "title": "eos amet tempore laudantium fugit a", "completed": false }, { "userId": 8, "id": 151, "title": "accusamus adipisci dicta qui quo ea explicabo sed vero", "completed": true }, { "userId": 8, "id": 152, "title": "odit eligendi recusandae doloremque cumque non", "completed": false }, { "userId": 8, "id": 153, "title": "ea aperiam consequatur qui repellat eos", "completed": false }, { "userId": 8, "id": 154, "title": "rerum non ex sapiente", "completed": true }, { "userId": 8, "id": 155, "title": "voluptatem nobis consequatur et assumenda magnam", "completed": true }, { "userId": 8, "id": 156, "title": "nam quia quia nulla repellat assumenda quibusdam sit nobis", "completed": true }, { "userId": 8, "id": 157, "title": "dolorem veniam quisquam deserunt repellendus", "completed": true }, { "userId": 8, "id": 158, "title": "debitis vitae delectus et harum accusamus aut deleniti a", "completed": true }, { "userId": 8, "id": 159, "title": "debitis adipisci quibusdam aliquam sed dolore ea praesentium nobis", "completed": true }, { "userId": 8, "id": 160, "title": "et praesentium aliquam est", "completed": false }, { "userId": 9, "id": 161, "title": "ex hic consequuntur earum omnis alias ut occaecati culpa", "completed": true }, { "userId": 9, "id": 162, "title": "omnis laboriosam molestias animi sunt dolore", "completed": true }, { "userId": 9, "id": 163, "title": "natus corrupti maxime laudantium et voluptatem laboriosam odit", "completed": false }, { "userId": 9, "id": 164, "title": "reprehenderit quos aut aut consequatur est sed", "completed": false }, { "userId": 9, "id": 165, "title": "fugiat perferendis sed aut quidem", "completed": false }, { "userId": 9, "id": 166, "title": "quos quo possimus suscipit minima ut", "completed": false }, { "userId": 9, "id": 167, "title": "et quis minus quo a asperiores molestiae", "completed": false }, { "userId": 9, "id": 168, "title": "recusandae quia qui sunt libero", "completed": false }, { "userId": 9, "id": 169, "title": "ea odio perferendis officiis", "completed": true }, { "userId": 9, "id": 170, "title": "quisquam aliquam quia doloribus aut", "completed": false }, { "userId": 9, "id": 171, "title": "fugiat aut voluptatibus corrupti deleniti velit iste odio", "completed": true }, { "userId": 9, "id": 172, "title": "et provident amet rerum consectetur et voluptatum", "completed": false }, { "userId": 9, "id": 173, "title": "harum ad aperiam quis", "completed": false }, { "userId": 9, "id": 174, "title": "similique aut quo", "completed": false }, { "userId": 9, "id": 175, "title": "laudantium eius officia perferendis provident perspiciatis asperiores", "completed": true }, { "userId": 9, "id": 176, "title": "magni soluta corrupti ut maiores rem quidem", "completed": false }, { "userId": 9, "id": 177, "title": "et placeat temporibus voluptas est tempora quos quibusdam", "completed": false }, { "userId": 9, "id": 178, "title": "nesciunt itaque commodi tempore", "completed": true }, { "userId": 9, "id": 179, "title": "omnis consequuntur cupiditate impedit itaque ipsam quo", "completed": true }, { "userId": 9, "id": 180, "title": "debitis nisi et dolorem repellat et", "completed": true }, { "userId": 10, "id": 181, "title": "ut cupiditate sequi aliquam fuga maiores", "completed": false }, { "userId": 10, "id": 182, "title": "inventore saepe cumque et aut illum enim", "completed": true }, { "userId": 10, "id": 183, "title": "omnis nulla eum aliquam distinctio", "completed": true }, { "userId": 10, "id": 184, "title": "molestias modi perferendis perspiciatis", "completed": false }, { "userId": 10, "id": 185, "title": "voluptates dignissimos sed doloribus animi quaerat aut", "completed": false }, { "userId": 10, "id": 186, "title": "explicabo odio est et", "completed": false }, { "userId": 10, "id": 187, "title": "consequuntur animi possimus", "completed": false }, { "userId": 10, "id": 188, "title": "vel non beatae est", "completed": true }, { "userId": 10, "id": 189, "title": "culpa eius et voluptatem et", "completed": true }, { "userId": 10, "id": 190, "title": "accusamus sint iusto et voluptatem exercitationem", "completed": true }, { "userId": 10, "id": 191, "title": "temporibus atque distinctio omnis eius impedit tempore molestias pariatur", "completed": true }, { "userId": 10, "id": 192, "title": "ut quas possimus exercitationem sint voluptates", "completed": false }, { "userId": 10, "id": 193, "title": "rerum debitis voluptatem qui eveniet tempora distinctio a", "completed": true }, { "userId": 10, "id": 194, "title": "sed ut vero sit molestiae", "completed": false }, { "userId": 10, "id": 195, "title": "rerum ex veniam mollitia voluptatibus pariatur", "completed": true }, { "userId": 10, "id": 196, "title": "consequuntur aut ut fugit similique", "completed": true }, { "userId": 10, "id": 197, "title": "dignissimos quo nobis earum saepe", "completed": true }, { "userId": 10, "id": 198, "title": "quis eius est sint explicabo", "completed": true }, { "userId": 10, "id": 199, "title": "numquam repellendus a magnam", "completed": true }, { "userId": 10, "id": 200, "title": "ipsam aperiam voluptates qui", "completed": false } ];
+
+    // make them globally accessible
+    window.providedTodos = PROVIDED_TODOS;
+
+    // current displayed todos (default none)
+    let currentDisplayTodos = [];
+
+    // ----- helpers for UI updates (attendance) -----
+    function refreshUserPanel() {
+        const panel = document.getElementById('userPanel');
+        const greetingSpan = document.getElementById('greetingName');
+        if (loggedInUser) {
+            panel.style.display = 'flex';
+            greetingSpan.textContent = `👋 ${loggedInUser.name} (${loggedInUser.email})`;
+        } else {
+            panel.style.display = 'none';
+        }
+        document.getElementById('signup-msg').textContent = '';
+        document.getElementById('signin-msg').textContent = '';
+    }
+
+    // ----- attendance functions (same as before, but attached to window) -----
+    window.signup = function() {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('signup-msg');
+        if (!name || !email || !password) { msg.textContent = "All fields required"; return; }
+        if (!/^\S+@\S+\.\S+$/.test(email)) { msg.textContent = "Invalid email"; return; }
+        if (users.some(u => u.email === email)) { msg.textContent = "Email exists"; return; }
+        users.push({ name, email, password, biometricRegistered: false });
+        msg.textContent = '';
+        ['name','email','password'].forEach(id => document.getElementById(id).value = '');
+        alert("Signup OK");
+    };
+
+    window.signin = function() {
+        const email = document.getElementById('login-email').value.trim();
+        const pwd = document.getElementById('login-password').value;
+        const msg = document.getElementById('signin-msg');
+        const user = users.find(u => u.email === email && u.password === pwd);
+        if (user) {
+            loggedInUser = user;
+            window.loggedInUser = user;
+            msg.textContent = '';
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+            refreshUserPanel();
+            alert(`Welcome ${user.name}`);
+        } else { msg.textContent = "Invalid credentials"; }
+    };
+
+    window.logout = function() {
+        loggedInUser = null; window.loggedInUser = null; refreshUserPanel();
+        document.getElementById('attendance-list').innerHTML = '<small>Your check-ins appear here</small>';
+        alert("Logged out");
+    };
+
+    window.biometricCheckIn = function() {
+        if (!loggedInUser) { alert("Sign in first"); return; }
+        if (!loggedInUser.biometricRegistered) {
+            if (confirm("Register biometric now?")) loggedInUser.biometricRegistered = true;
+            else return;
+        }
+        const date = new Date().toLocaleDateString('en-CA');
+        const time = new Date().toLocaleTimeString();
+        if (attendance.some(a => a.email === loggedInUser.email && a.date === date && a.type === 'check-in')) 
+            { alert("Already checked in"); return; }
+        attendance.push({ email: loggedInUser.email, type: 'check-in', date, time });
+        alert("Check-in recorded");
+        viewAttendance();
+    };
+
+    window.biometricCheckOut = function() {
+        if (!loggedInUser) { alert("Sign in first"); return; }
+        const date = new Date().toLocaleDateString('en-CA');
+        const time = new Date().toLocaleTimeString();
+        if (!attendance.some(a => a.email === loggedInUser.email && a.date === date && a.type === 'check-in'))
+            { alert("Check in first"); return; }
+        if (attendance.some(a => a.email === loggedInUser.email && a.date === date && a.type === 'check-out'))
+            { alert("Already checked out"); return; }
+        attendance.push({ email: loggedInUser.email, type: 'check-out', date, time });
+        alert("Check-out recorded");
+        viewAttendance();
+    };
+
+    window.viewAttendance = function() {
+        if (!loggedInUser) { alert("Sign in first"); return; }
+        const listDiv = document.getElementById("attendance-list");
+        const userAttendance = attendance.filter(a => a.email === loggedInUser.email);
+        if (userAttendance.length === 0) { listDiv.innerHTML = "<p>No records</p>"; return; }
+        listDiv.innerHTML = userAttendance.map(a => 
+            `<div class="attendance-item">${a.date} · ${a.type === 'check-in' ? '🟢 IN' : '🔴 OUT'} at ${a.time}</div>`
+        ).join('');
+    };
+
+    // ----- TODO display functions -----
+    function renderTodos(todos) {
+        const container = document.getElementById('todoContainer');
+        if (!todos || todos.length === 0) {
+            container.innerHTML = '<span class="badge">No todos match</span>';
+            return;
+        }
+        container.innerHTML = todos.map(t => `
+            <div class="todo-item">
+                <span class="status-dot ${t.completed ? 'completed' : 'pending'}"></span>
+                <span style="flex:1;"><b>#${t.id}</b> ${t.title}</span>
+                <span class="badge">👤 ${t.userId}</span>
+                <span class="badge" style="background:${t.completed ? '#22c55e30' : '#f9731630'}">${t.completed ? 'done' : 'pending'}</span>
+            </div>
+        `).join('');
+    }
+
+    window.loadProvidedTodos = function() {
+        currentDisplayTodos = PROVIDED_TODOS;
+        renderTodos(PROVIDED_TODOS);
+    };
+
+    window.filterByUserId = function() {
+        const uid = parseInt(document.getElementById('userIdFilter').value, 10);
+        if (isNaN(uid)) return;
+        const filtered = PROVIDED_TODOS.filter(t => t.userId === uid);
+        currentDisplayTodos = filtered;
+        renderTodos(filtered);
+    };
+
+    window.filterMyTodos = function() {
+        if (!loggedInUser) { alert("No user logged in — can't match userId"); return; }
+        // We'll derive a pseudo userId from email length (demo only) to show integration
+        // Simpler: just pick userId = (users.indexOf(loggedInUser) % 10)+1   or use email length
+        const fakeUserId = (loggedInUser.email.length % 10) + 1;  // range 1-10
+        const filtered = PROVIDED_TODOS.filter(t => t.userId === fakeUserId);
+        currentDisplayTodos = filtered;
+        renderTodos(filtered);
+        alert(`Showing userId = ${fakeUserId} (derived from email length)`);
+    };
+
+    window.resetTodoDisplay = function() {
+        if (currentDisplayTodos.length > 0) renderTodos(currentDisplayTodos);
+        else renderTodos(PROVIDED_TODOS.slice(0,20)); // fallback
+    };
+
+    // initial load nothing
+    renderTodos([]);
+
+    // sync user panel at start
+    refreshUserPanel();
+
+    // make loggedInUser reactive via window
+    Object.defineProperty(window, 'loggedInUser', {
+        get: () => window._loggedInUser,
+        set: (v) => { window._loggedInUser = v; }
+    });
+    window._loggedInUser = null;
+    loggedInUser = null;
+})();
+</script>
+<!-- ensure global loggedInUser from attendance matches -->
+</body>
+</html>

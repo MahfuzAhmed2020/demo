@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Attendance · demo</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; }
+        body { background: #f4f7fb; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .container { max-width: 560px; width: 100%; background: white; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,10,30,0.15); padding: 28px 24px; transition: 0.2s; }
+        h2 { font-size: 1.5rem; font-weight: 600; margin: 20px 0 12px 0; color: #1e293b; border-left: 6px solid #2563eb; padding-left: 16px; }
+        h2:first-of-type { margin-top: 4px; }
+        hr { border: none; height: 1px; background: #e2e8f0; margin: 28px 0 10px 0; }
+        input, button { width: 100%; border-radius: 40px; border: 1px solid #cbd5e1; padding: 12px 18px; font-size: 1rem; outline: none; transition: 0.15s; background: white; margin-bottom: 8px; }
+        input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+        button { background: #2563eb; color: white; font-weight: 600; border: none; cursor: pointer; margin-top: 4px; box-shadow: 0 4px 6px rgba(37,99,235,0.3); letter-spacing: 0.3px; }
+        button:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-secondary { background: #475569; box-shadow: none; margin-top: 8px; }
+        .btn-secondary:hover { background: #334155; }
+        .error { color: #b91c1c; font-size: 0.9rem; margin: 4px 0 0 4px; font-weight: 500; min-height: 24px; }
+        .success { color: #166534; }
+        .attendance-list { background: #f8fafc; border-radius: 24px; padding: 16px; margin: 18px 0 8px; border: 1px solid #dbeafe; }
+        .attendance-list p { background: white; padding: 10px 16px; border-radius: 40px; margin: 8px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-left: 4px solid #2563eb; font-size: 0.95rem; }
+        #api-data { background: #f1f5f9; border-radius: 24px; padding: 16px 24px; list-style-type: disc; margin-top: 12px; font-size: 0.9rem; border: 1px solid #cbd5e1; }
+        li { margin-bottom: 6px; color: #0f172a; }
+        .badge { background: #e2e8f0; color: #1e293b; padding: 4px 12px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; display: inline-block; margin-left: 8px; }
+        .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .flex-row button { flex: 1 1 0; min-width: 120px; }
+        .user-greeting { background: #dbeafe; padding: 12px 20px; border-radius: 50px; color: #1e3a8a; font-weight: 500; margin: 16px 0 8px; display: flex; align-items: center; justify-content: space-between; }
+        .user-greeting span { background: #2563eb; color: white; padding: 4px 14px; border-radius: 40px; font-size: 0.8rem; }
+        .footnote { font-size: 0.8rem; color: #64748b; text-align: center; margin-top: 24px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span style="font-size: 2.2rem;">👤</span>
+            <span style="font-weight: 700; font-size: 1.8rem; color:#0f172a;">Bio<span style="color:#2563eb;">Track</span></span>
+        </div>
+
+        <!-- SIGNUP SECTION -->
+        <h2>📝 Signup</h2>
+        <input type="text" id="name" placeholder="Full name" required>
+        <input type="email" id="email" placeholder="Email address" required>
+        <input type="password" id="password" placeholder="Password (min 4 chars)" required>
+        <button onclick="signup()">Create account</button>
+        <p id="signup-msg" class="error"></p>
+
+        <hr>
+
+        <!-- SIGNIN SECTION -->
+        <h2>🔐 Sign In</h2>
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button onclick="signin()">Log in</button>
+        <p id="signin-msg" class="error"></p>
+
+        <!-- logged-in indicator (dynamic) -->
+        <div id="userPanel" style="display: none;" class="user-greeting">
+            <span id="greetingName"></span>
+            <span>✅ active session</span>
+        </div>
+
+        <hr>
+
+        <!-- HOME / ATTENDANCE ACTIONS -->
+        <h2>⏱️ Attendance</h2>
+        <div class="flex-row">
+            <button onclick="biometricCheckIn()">✅ Check In</button>
+            <button onclick="biometricCheckOut()" class="btn-secondary" style="background:#4b5563;">⬅️ Check Out</button>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button onclick="viewAttendance()" style="background:#059669;">📋 View my log</button>
+            <button onclick="logout()" style="background:#b45309;">🚪 Logout</button>
+        </div>
+
+        <!-- ATTENDANCE DISPLAY AREA -->
+        <div class="attendance-list" id="attendance-list">
+            <small style="color:#64748b;">Your check-ins/outs appear here</small>
+        </div>
+
+        <hr>
+
+        <!-- FETCH DEMO (jsonplaceholder) -->
+        <h2>📡 University of the people</h2>
+        <button onclick="fetchData()" style="background:#7c3aed;">Log</button>
+        <ul id="api-data" style="margin-top: 14px; max-height: 200px; overflow-y: auto;"></ul>
+        <div class="footnote">⚡© MD MAHFUZ </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- in‑memory DB ----------
+            window.users = window.users || [];
+            window.loggedInUser = window.loggedInUser || null;
+            window.attendance = window.attendance || [];
+
+            // helper to update UI based on session
+            function refreshUserPanel() {
+                const panel = document.getElementById('userPanel');
+                const greetingSpan = document.getElementById('greetingName');
+                if (loggedInUser) {
+                    panel.style.display = 'flex';
+                    greetingSpan.textContent = `👋 ${loggedInUser.name} (${loggedInUser.email})`;
+                } else {
+                    panel.style.display = 'none';
+                    greetingSpan.textContent = '';
+                }
+                // also clear any stale messages
+                document.getElementById('signup-msg').textContent = '';
+                document.getElementById('signin-msg').textContent = '';
+            }
+
+            // ---------- signup ----------
+            window.signup = function() {
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const msg = document.getElementById('signup-msg');
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!name || !email || !password) {
+                    msg.textContent = "❗ All fields required";
+                    return;
+                }
+                if (!emailRegex.test(email)) {
+                    msg.textContent = "❗ Invalid email format";
+                    return;
+                }
+                if (password.length < 4) {
+                    msg.textContent = "❗ Password must be at least 4 chars";
+                    return;
+                }
+                // avoid duplicate emails (simple)
+                if (users.some(u => u.email === email)) {
+                    msg.textContent = "❗ Email already registered. Sign in.";
+                    return;
+                }
+
+                users.push({ name, email, password, biometricRegistered: false });
+                msg.textContent = "";
+                // clear fields
+                document.getElementById('name').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                alert("✅ Signup successful! Please sign in.");
+            };
+
+            // ---------- signin ----------
+            window.signin = function() {
+                const email = document.getElementById('login-email').value.trim();
+                const password = document.getElementById('login-password').value;
+                const msg = document.getElementById('signin-msg');
+
+                const user = users.find(u => u.email === email && u.password === password);
+                if (user) {
+                    loggedInUser = user;
+                    window.loggedInUser = loggedInUser;   // keep global
+                    msg.textContent = "";
+                    document.getElementById('login-email').value = '';
+                    document.getElementById('login-password').value = '';
+                    refreshUserPanel();
+                    alert(`✨ Welcome back, ${user.name}!`);
+                } else {
+                    msg.textContent = "❌ Invalid credentials or user not found";
+                }
+            };
+
+            // logout function
+            window.logout = function() {
+                if (loggedInUser) {
+                    loggedInUser = null;
+                    window.loggedInUser = null;
+                    refreshUserPanel();
+                    document.getElementById('attendance-list').innerHTML = '<small style="color:#64748b;">Your check-ins/outs appear here</small>';
+                    alert("You have been logged out.");
+                } else {
+                    alert("No active session.");
+                }
+            };
+
+            // ---------- biometric check‑in ----------
+            window.biometricCheckIn = function() {
+                if (!loggedInUser) { alert("⛔ Please sign in first"); return; }
+
+                if (!loggedInUser.biometricRegistered) {
+                    let register = confirm("🖐️ Biometric not registered. Enroll now?");
+                    if (register) {
+                        loggedInUser.biometricRegistered = true;
+                        alert("✅ Biometric registered successfully (simulated)");
+                    } else {
+                        return;
+                    }
+                }
+
+                const currentDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format more reliable
+                const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                let checkInExists = attendance.find(a => a.email === loggedInUser.email && a.date === currentDate && a.type === "check-in");
+                if (checkInExists) {
+                    alert("⚠️ Already checked in today!");
+                    return;
+                }
+
+                attendance.push({ email: loggedInUser.email, type: "check-in", date: currentDate, time: currentTime });
+                alert(`✅ Check-in recorded at ${currentTime}`);
+                viewAttendance();  // auto refresh view
+            };
+
+            window.biometricCheckOut = function() {
+                if (!loggedInUser) { alert("⛔ Please sign in first"); return; }
+
+                const currentDate = new Date().toLocaleDateString('en-CA');
+                const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                let checkInExists = attendance.find(a => a.email === loggedInUser.email && a.date === currentDate && a.type === "check-in");
+                if (!checkInExists) {
+                    alert("⚠️ You need to check in first!");
+                    return;
+                }
+
+                let checkOutExists = attendance.find(a => a.email === loggedInUser.email && a.date === currentDate && a.type === "check-out");
+                if (checkOutExists) {
+                    alert("⚠️ Already checked out today!");
+                    return;
+                }
+
+                attendance.push({ email: loggedInUser.email, type: "check-out", date: currentDate, time: currentTime });
+                alert(`⬅️ Check-out recorded at ${currentTime}`);
+                viewAttendance();
+            };
+
+            // ---------- view attendance ----------
+            window.viewAttendance = function() {
+                if (!loggedInUser) { alert("⛔ Please sign in first"); return; }
+                const listDiv = document.getElementById("attendance-list");
+                listDiv.innerHTML = "";
+
+                let userAttendance = attendance.filter(a => a.email === loggedInUser.email);
+                if (userAttendance.length === 0) {
+                    listDiv.innerHTML = '<p style="color:#475569;">📭 No attendance records yet.</p>';
+                    return;
+                }
+
+                // sort by date desc / time desc (simple reverse)
+                userAttendance.sort((a,b) => (b.date + 'T' + b.time).localeCompare(a.date + 'T' + a.time));
+                userAttendance.forEach(a => {
+                    let p = document.createElement("p");
+                    p.textContent = `${a.date} · ${a.type === 'check-in' ? '🟢 IN' : '🔴 OUT'} at ${a.time}`;
+                    listDiv.appendChild(p);
+                });
+            };
+
+            // // ---------- fetch API sample ----------
+            // window.fetchData = async function() {
+            //     const apiList = document.getElementById("api-data");
+            //     apiList.innerHTML = "<li style='color:#2563eb;'>⏳ loading ...</li>";
+
+            //     try {
+            //         let response = await fetch('https://jsonplaceholder.typicode.com/todos');
+            //         if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            //         let data = await response.json();
+            //         apiList.innerHTML = "";
+            //         data.slice(0, 10).forEach(todo => {
+            //             let li = document.createElement("li");
+            //             li.textContent = `${todo.id}. ${todo.title} — ${todo.completed ? '✅' : '⏳'}`;
+            //             apiList.appendChild(li);
+            //         });
+            //     } catch (error) {
+            //         apiList.innerHTML = `<li class="error">❌ fetch error: ${error.message}</li>`;
+            //     }
+            // };
+
+            // initial panel sync
+            refreshUserPanel();
+
+            // keep loggedInUser reference in window object after any overwrite
+            Object.defineProperty(window, 'loggedInUser', {
+                get: function() { return window._loggedInUser; },
+                set: function(val) { window._loggedInUser = val; }
+            });
+            // initialise
+            if (!window._loggedInUser) window._loggedInUser = null;
+            loggedInUser = window._loggedInUser;
+
+            // sync from outer to inner on any signin
+            window._loggedInUser = loggedInUser;
+        })();
+    </script>
+    <!-- ensure that the global variable stays in sync -->
+    <script>
+        // additional sync: after any operation that changes loggedInUser, call this.
+        // but we used a setter above. to be safe patch the original methods.
+        (function() {
+            const originalSignin = window.signin;
+            window.signin = function() {
+                originalSignin.call(this);
+                // after signin, window._loggedInUser is already set
+                if (window._loggedInUser) document.getElementById('userPanel').style.display = 'flex';
+            };
+
+            // fix any logout overlap
+            const originalLogout = window.logout;
+            window.logout = function() {
+                if (window._loggedInUser) window._loggedInUser = null;
+                document.getElementById('userPanel').style.display = 'none';
+                document.getElementById('attendance-list').innerHTML = '<small style="color:#64748b;">Your check-ins/outs appear here</small>';
+                alert("You have been logged out.");
+            };
+        })();
+    </script>
+</body>
+</html>
