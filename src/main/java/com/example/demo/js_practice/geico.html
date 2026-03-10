@@ -1,361 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-      <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GEICO Homeowners Insurance Quote</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-    }
 
-    body {
-      background-color: #003366; /* GEICO dark blue */
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .container {
-      background-color: white;
-      max-width: 700px;
-      width: 100%;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      overflow: hidden;
-    }
-
-    .header {
-      background-color: #003366;
-      color: white;
-      padding: 25px 30px;
-      border-bottom: 3px solid #001f4d;
-    }
-
-    .header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
-
-    .header p {
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .content {
-      padding: 30px;
-    }
-
-    h3 {
-      color: #003366;
-      font-size: 18px;
-      font-weight: 600;
-      margin: 20px 0 15px 0;
-      padding-bottom: 8px;
-      border-bottom: 2px solid #cce6ff;
-      letter-spacing: 0.5px;
-    }
-
-    h3:first-of-type {
-      margin-top: 0;
-    }
-
-    .form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    .form-group {
-      flex: 1 1 calc(50% - 15px);
-      min-width: 200px;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: #555;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 12px 15px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-      background-color: #f9f9f9;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: #003366;
-      box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
-      background-color: white;
-    }
-
-    input[type="date"] {
-      padding: 10px 15px;
-    }
-
-    .button-container {
-      margin-top: 30px;
-      text-align: center;
-    }
-
-    button {
-      background-color: #003366;
-      color: white;
-      border: none;
-      padding: 16px 40px;
-      font-size: 18px;
-      font-weight: 700;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 4px 10px rgba(0, 51, 102, 0.3);
-      border: 2px solid transparent;
-    }
-
-    button:hover {
-      background-color: #001f4d;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0, 51, 102, 0.4);
-    }
-
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 5px rgba(0, 51, 102, 0.3);
-    }
-
-    .required-star {
-      color: #003366;
-      margin-left: 3px;
-      font-size: 14px;
-    }
-
-    .field-note {
-      font-size: 11px;
-      color: #999;
-      margin-top: 4px;
-    }
-
-    .divider {
-      height: 1px;
-      background: linear-gradient(to right, transparent, #cce6ff, transparent);
-      margin: 25px 0 15px 0;
-    }
-
-    .footer-note {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 12px;
-      color: #777;
-      border-top: 1px solid #eee;
-      padding-top: 20px;
-    }
-
-    .footer-note span {
-      color: #003366;
-      font-weight: 600;
-    }
-
-    .zip-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    .zip-group input {
-      flex: 1;
-    }
-
-    @media (max-width: 600px) {
-      .form-group {
-        flex: 1 1 100%;
-      }
-      
-      .header h1 {
-        font-size: 24px;
-      }
-      
-      .content {
-        padding: 20px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>🏠 GEICO INSURANCE</h1>
-      <p>Homeowners Quote • Coverage Made Easy</p>
-    </div>
-    
-    <div class="content">
-      <form id="quoteForm">
-        <h3>ABOUT YOU</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>FIRST NAME <span class="required-star">*</span></label>
-            <input type="text" name="firstName" required placeholder="John">
-          </div>
-          <div class="form-group">
-            <label>LAST NAME <span class="required-star">*</span></label>
-            <input type="text" name="lastName" required placeholder="Smith">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>EMAIL <span class="required-star">*</span></label>
-            <input type="email" name="email" required placeholder="john.smith@email.com">
-          </div>
-          <div class="form-group">
-            <label>PHONE</label>
-            <input type="tel" name="phone" placeholder="(555) 123-4567">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>YEARS AT ADDRESS <span class="required-star">*</span></label>
-            <input type="number" name="yearsAtAddress" required placeholder="5">
-          </div>
-          <div class="form-group">
-            <label>ZIP CODE</label>
-            <input type="text" name="zipCode" placeholder="55403" maxlength="10">
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label>PRIOR ADDRESS</label>
-          <input type="text" name="priorAddress" placeholder="123 Main St, Anytown, USA">
-        </div>
-
-        <h3>PROPERTY DETAILS</h3>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>COVERAGE START DATE</label>
-            <input type="date" name="coverageStartDate" min="2026-03-11" max="2026-05-08">
-            <div class="field-note">Between Mar 11 - May 8, 2026</div>
-          </div>
-          <div class="form-group">
-            <label>ROOF YEAR</label>
-            <input type="number" name="roofYear" placeholder="2015" min="1900" max="2026">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>FOUNDATION TYPE</label>
-            <input type="text" name="foundationType" placeholder="Concrete / Basement / Slab">
-          </div>
-          <div class="form-group">
-            <label>FINISHED BASEMENT</label>
-            <select name="finishedBasement">
-              <option value="true">Yes - Finished</option>
-              <option value="false" selected>No - Unfinished</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>GARAGE TYPE</label>
-            <input type="text" name="garageType" placeholder="Attached / Detached / None">
-          </div>
-          <div class="form-group">
-            <label>NUMBER OF PEOPLE</label>
-            <input type="number" name="numPeople" placeholder="2" min="1" max="20">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>HALF BATHROOMS</label>
-            <input type="number" name="numHalfBathrooms" placeholder="1" min="0" max="10">
-          </div>
-          <div class="form-group">
-            <label>APPLIANCE GRADE</label>
-            <input type="text" name="applianceGrade" placeholder="Standard / Premium / Luxury">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>PAST CLAIMS</label>
-          <select name="pastClaims">
-            <option value="false">No claims in last 5 years</option>
-            <option value="true">Yes - I have filed claims</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="button-container">
-          <button type="submit">GET MY QUOTE</button>
-        </div>
-        
-        <div class="footer-note">
-          <span>GEICO</span> • Safe, secure & guaranteed • Questions? Call 1-800-947-4321
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    document.getElementById('quoteForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      const data = Object.fromEntries(formData.entries());
-
-      // Convert boolean strings
-      data.finishedBasement = data.finishedBasement === 'true';
-      data.pastClaims = data.pastClaims === 'true';
-
-      // For demo - show success message with GEICO styling
-      console.log('GEICO Insurance Quote Request:', data);
-      
-      const submitBtn = document.querySelector('button');
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = '✓ QUOTE REQUESTED!';
-      submitBtn.style.backgroundColor = '#00a651'; // Green success color
-      
-      setTimeout(() => {
-        submitBtn.textContent = originalText;
-        submitBtn.style.backgroundColor = '#003366';
-      }, 3000);
-      
-      alert('✅ Thank you for choosing GEICO Insurance! Your quote request has been received. A representative will contact you within 24 hours.');
-      
-      // Uncomment to connect to actual API
-      /*
-      fetch('/api/register', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      }).then(res => res.text())
-        .then(msg => alert(msg))
-        .catch(err => alert('Error: ' + err));
-      */
-    });
-  </script>
-</body>
-</html>
 
 <!--
 
@@ -685,3 +328,205 @@ This **GEICO Homeowners Insurance Quote Epic** organizes the application into a 
 
 
 -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEICO Homeowners Insurance Quote</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background-color: #0076ce; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+    .container { background-color: white; width: 100%; max-width: 700px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); overflow: hidden; }
+    .header { background-color: #0076ce; color: white; padding: 25px; text-align: center; }
+    .header h1 { font-size: 28px; margin-bottom: 5px; }
+    .header p { font-size: 14px; opacity: 0.9; }
+    .content { padding: 30px; }
+    h3 { color: #0076ce; margin-bottom: 15px; border-bottom: 2px solid #cce6f5; padding-bottom: 5px; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+    .form-group { flex: 1 1 calc(50% - 15px); min-width: 200px; }
+    label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; }
+    input:focus, select:focus { outline: none; border-color: #0076ce; box-shadow: 0 0 0 3px rgba(0,118,206,0.1); }
+    .button-container { text-align: center; margin-top: 20px; }
+    button { background-color: #0076ce; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 50px; cursor: pointer; margin: 5px; transition: all 0.3s ease; }
+    button:hover { background-color: #005bb5; transform: translateY(-2px); }
+    .step { display: none; }
+    .step.active { display: block; }
+    .footer-note { text-align: center; font-size: 12px; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+    @media (max-width: 600px) { .form-group { flex: 1 1 100%; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏠 GEICO INSURANCE</h1>
+      <p>Homeowners Quote • Step-by-Step</p>
+    </div>
+
+    <div class="content">
+      <form id="quoteForm">
+        <!-- Step 1: About You -->
+        <div class="step active" id="step1">
+          <h3>ABOUT YOU</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name *</label>
+              <input type="text" name="firstName" required placeholder="John">
+            </div>
+            <div class="form-group">
+              <label>Last Name *</label>
+              <input type="text" name="lastName" required placeholder="Smith">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" name="email" required placeholder="john.smith@email.com">
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" name="phone" placeholder="(555) 123-4567">
+            </div>
+          </div>
+          <div class="button-container">
+            <button type="button" onclick="nextStep(2)">Next ➡</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Address -->
+        <div class="step" id="step2">
+          <h3>ADDRESS DETAILS</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Current Address *</label>
+              <input type="text" name="currentAddress" required placeholder="123 Main St">
+            </div>
+            <div class="form-group">
+              <label>ZIP Code *</label>
+              <input type="text" name="zipCode" required placeholder="55403">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Years at Address *</label>
+              <input type="number" name="yearsAtAddress" required placeholder="5">
+            </div>
+            <div class="form-group">
+              <label>Prior Address</label>
+              <input type="text" name="priorAddress" placeholder="Optional if <2 years">
+            </div>
+          </div>
+          <div class="button-container">
+            <button type="button" onclick="nextStep(1)">⬅ Back</button>
+            <button type="button" onclick="nextStep(3)">Next ➡</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Property Details -->
+        <div class="step" id="step3">
+          <h3>PROPERTY DETAILS</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Coverage Start Date</label>
+              <input type="date" name="coverageStartDate" min="2026-03-11" max="2026-05-08">
+            </div>
+            <div class="form-group">
+              <label>Roof Year</label>
+              <input type="number" name="roofYear" min="1900" max="2026" placeholder="2015">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Foundation Type</label>
+              <input type="text" name="foundationType" placeholder="Basement / Slab / Concrete">
+            </div>
+            <div class="form-group">
+              <label>Finished Basement</label>
+              <select name="finishedBasement">
+                <option value="true">Yes</option>
+                <option value="false" selected>No</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Garage Type</label>
+              <input type="text" name="garageType" placeholder="Attached / Detached / None">
+            </div>
+            <div class="form-group">
+              <label>Number of People</label>
+              <input type="number" name="numPeople" min="1" max="20" placeholder="2">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Half Bathrooms</label>
+              <input type="number" name="numHalfBathrooms" min="0" max="10" placeholder="1">
+            </div>
+            <div class="form-group">
+              <label>Appliance Grade</label>
+              <input type="text" name="applianceGrade" placeholder="Standard / Premium / Luxury">
+            </div>
+          </div>
+          <div class="button-container">
+            <button type="button" onclick="nextStep(2)">⬅ Back</button>
+            <button type="button" onclick="nextStep(4)">Next ➡</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Claims & Bundles -->
+        <div class="step" id="step4">
+          <h3>INSURANCE HISTORY & BUNDLES</h3>
+          <div class="form-group">
+            <label>Past Claims</label>
+            <select name="pastClaims">
+              <option value="false">No claims</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Bundle Options</label>
+            <select name="bundle">
+              <option value="none">None</option>
+              <option value="auto">Auto</option>
+              <option value="motorcycle">Motorcycle</option>
+              <option value="boat">Boat</option>
+              <option value="rv">RV</option>
+            </select>
+          </div>
+          <div class="button-container">
+            <button type="button" onclick="nextStep(3)">⬅ Back</button>
+            <button type="submit">✅ Submit</button>
+          </div>
+        </div>
+
+        <div class="footer-note">
+          <span>❤️ GEICO</span> • Safe, secure & guaranteed • Questions? Call 1-800-GEICO
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function nextStep(stepNum) {
+      const steps = document.querySelectorAll('.step');
+      steps.forEach(s => s.classList.remove('active'));
+      const next = document.getElementById('step' + stepNum);
+      next.classList.add('active');
+      next.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('quoteForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+      console.log('Form Submitted:', data);
+      alert('✅ Thank you! Your GEICO quote request has been received.');
+      // Here you can call your backend API to save data or generate PDF
+    });
+  </script>
+</body>
+</html>
