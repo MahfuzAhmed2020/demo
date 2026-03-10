@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEICO Homeowners Insurance Quote</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      background-color: #003366; /* GEICO dark blue */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background-color: white;
+      max-width: 700px;
+      width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background-color: #003366;
+      color: white;
+      padding: 25px 30px;
+      border-bottom: 3px solid #001f4d;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    h3 {
+      color: #003366;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0 15px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #cce6ff;
+      letter-spacing: 0.5px;
+    }
+
+    h3:first-of-type {
+      margin-top: 0;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      flex: 1 1 calc(50% - 15px);
+      min-width: 200px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background-color: #f9f9f9;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #003366;
+      box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+      background-color: white;
+    }
+
+    input[type="date"] {
+      padding: 10px 15px;
+    }
+
+    .button-container {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    button {
+      background-color: #003366;
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 10px rgba(0, 51, 102, 0.3);
+      border: 2px solid transparent;
+    }
+
+    button:hover {
+      background-color: #001f4d;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 51, 102, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 5px rgba(0, 51, 102, 0.3);
+    }
+
+    .required-star {
+      color: #003366;
+      margin-left: 3px;
+      font-size: 14px;
+    }
+
+    .field-note {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #cce6ff, transparent);
+      margin: 25px 0 15px 0;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+
+    .footer-note span {
+      color: #003366;
+      font-weight: 600;
+    }
+
+    .zip-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .zip-group input {
+      flex: 1;
+    }
+
+    @media (max-width: 600px) {
+      .form-group {
+        flex: 1 1 100%;
+      }
+      
+      .header h1 {
+        font-size: 24px;
+      }
+      
+      .content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏠 GEICO INSURANCE</h1>
+      <p>Homeowners Quote • Coverage Made Easy</p>
+    </div>
+    
+    <div class="content">
+      <form id="quoteForm">
+        <h3>ABOUT YOU</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>FIRST NAME <span class="required-star">*</span></label>
+            <input type="text" name="firstName" required placeholder="John">
+          </div>
+          <div class="form-group">
+            <label>LAST NAME <span class="required-star">*</span></label>
+            <input type="text" name="lastName" required placeholder="Smith">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>EMAIL <span class="required-star">*</span></label>
+            <input type="email" name="email" required placeholder="john.smith@email.com">
+          </div>
+          <div class="form-group">
+            <label>PHONE</label>
+            <input type="tel" name="phone" placeholder="(555) 123-4567">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>YEARS AT ADDRESS <span class="required-star">*</span></label>
+            <input type="number" name="yearsAtAddress" required placeholder="5">
+          </div>
+          <div class="form-group">
+            <label>ZIP CODE</label>
+            <input type="text" name="zipCode" placeholder="55403" maxlength="10">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>PRIOR ADDRESS</label>
+          <input type="text" name="priorAddress" placeholder="123 Main St, Anytown, USA">
+        </div>
+
+        <h3>PROPERTY DETAILS</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>COVERAGE START DATE</label>
+            <input type="date" name="coverageStartDate" min="2026-03-11" max="2026-05-08">
+            <div class="field-note">Between Mar 11 - May 8, 2026</div>
+          </div>
+          <div class="form-group">
+            <label>ROOF YEAR</label>
+            <input type="number" name="roofYear" placeholder="2015" min="1900" max="2026">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>FOUNDATION TYPE</label>
+            <input type="text" name="foundationType" placeholder="Concrete / Basement / Slab">
+          </div>
+          <div class="form-group">
+            <label>FINISHED BASEMENT</label>
+            <select name="finishedBasement">
+              <option value="true">Yes - Finished</option>
+              <option value="false" selected>No - Unfinished</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>GARAGE TYPE</label>
+            <input type="text" name="garageType" placeholder="Attached / Detached / None">
+          </div>
+          <div class="form-group">
+            <label>NUMBER OF PEOPLE</label>
+            <input type="number" name="numPeople" placeholder="2" min="1" max="20">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>HALF BATHROOMS</label>
+            <input type="number" name="numHalfBathrooms" placeholder="1" min="0" max="10">
+          </div>
+          <div class="form-group">
+            <label>APPLIANCE GRADE</label>
+            <input type="text" name="applianceGrade" placeholder="Standard / Premium / Luxury">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>PAST CLAIMS</label>
+          <select name="pastClaims">
+            <option value="false">No claims in last 5 years</option>
+            <option value="true">Yes - I have filed claims</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="button-container">
+          <button type="submit">GET MY QUOTE</button>
+        </div>
+        
+        <div class="footer-note">
+          <span>GEICO</span> • Safe, secure & guaranteed • Questions? Call 1-800-947-4321
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('quoteForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+
+      // Convert boolean strings
+      data.finishedBasement = data.finishedBasement === 'true';
+      data.pastClaims = data.pastClaims === 'true';
+
+      // For demo - show success message with GEICO styling
+      console.log('GEICO Insurance Quote Request:', data);
+      
+      const submitBtn = document.querySelector('button');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = '✓ QUOTE REQUESTED!';
+      submitBtn.style.backgroundColor = '#00a651'; // Green success color
+      
+      setTimeout(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.style.backgroundColor = '#003366';
+      }, 3000);
+      
+      alert('✅ Thank you for choosing GEICO Insurance! Your quote request has been received. A representative will contact you within 24 hours.');
+      
+      // Uncomment to connect to actual API
+      /*
+      fetch('/api/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      }).then(res => res.text())
+        .then(msg => alert(msg))
+        .catch(err => alert('Error: ' + err));
+      */
+    });
+  </script>
+</body>
+</html>
+
+<!--
+
+
+
+*"Create a complete GEICO Homeowners Insurance Quote Application, including both **detailed scenario/documentation** and **fully functional code examples**. 
+Organize your output with clear headings:
+
+1. **Purpose** – Explain the goal of the application and the problem it solves.
+2. **Target Users** – Identify primary and secondary users.
+3. **Frontend Features** – Provide **responsive HTML/CSS/JavaScript code** for a step-by-step form (personal info, property details, claims history, 
+optional bundling). Include validation, mobile/browser responsiveness, and prefill guidance.
+4. **Backend Features** – Provide **Spring Boot Java code** with REST API endpoints to receive form data, validate, and store in **MySQL**. 
+Include models, controllers, services, and repository examples.
+5. **Database Design** – Provide **SQL scripts** to create MySQL tables (`user_info`, `property_details`) with proper relationships and constraints.
+6. **Email Notifications** – Include code examples for sending confirmation emails using **MailHog** (development/testing).
+7. **Optional Features** – Code snippets or notes for PDF/Excel quote generation, dynamic bundling discounts, and historical reporting.
+8. **User Workflow** – Step-by-step scenario showing how the user moves from starting the quote to receiving confirmation.
+9. **API Testing** – Provide **Postman JSON payload examples** for testing the backend endpoints.
+10. **Key Benefits** – Summarize advantages for users and GEICO (usability, efficiency, scalability, testability).
+11. **Technical Stack Table** – Show frontend, backend, database, email, API testing, and reporting tools.
+
+Ensure all code is **ready-to-run or easily adaptable**, with proper comments and structure, so a developer could implement the 
+**full GEICO Homeowners Insurance Quote Application** from it."*
+
+
+
+
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Prompt:
+"Describe a full GEICO Homeowners Insurance Quote Application in a professional, detailed, and precise way.
+ Include the purpose, target users, step-by-step user workflow (personal info, property details, claims history, optional bundling), 
+ frontend features (HTML, JavaScript, CSS, responsive UI for mobile and browsers), backend integration
+  (Spring Boot REST API, MySQL database, email notifications via MailHog), validation, API testing (Postman), 
+  optional features (PDF/Excel generation, historical reporting, bundling discounts), 
+  and key benefits for both users and the insurance company. Make it suitable for stakeholders,
+   developers, and QA teams, and organize it in clear sections with headings."
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+**GEICO Homeowners Insurance Quote Application** scenario in the **
+
+---
+
+## **GEICO Homeowners Insurance Quote Application – Scenario Description**
+
+**Purpose:**
+The GEICO Homeowners Insurance Quote Application is designed to provide users with a **simple, guided, and interactive platform** to obtain homeowners insurance quotes. 
+Users can enter **personal and property information**,
+ optionally bundle existing insurance policies (like auto, motorcycle, or renters) for discounts, and receive **confirmation via email**.
+  The system is **fully responsive**, integrates with a backend API, and supports **data validation and storage** in a database.
+
+---
+
+### **Target Users**
+
+* Homeowners seeking new insurance coverage or switching providers.
+* Existing GEICO policyholders interested in bundling multiple policies for discounts.
+* Insurance agents or brokers who need to quickly collect accurate quote data.
+
+---
+
+### **Features**
+
+1. **Step-by-Step Quote Form (UI)**
+   The frontend is designed to guide users through structured sections:
+
+   * **About You** – Collects personal info: first/last name, email, phone, current address, years at residence, prior address (if <2 years).
+   * **Property Details** – Includes coverage start date, roof year, foundation type, basement, garage type, number of people, bathrooms, and appliance grade.
+   * **Claims History** – Users indicate any property insurance claims in the past 7 years.
+   * **Optional Bundles** – Users can select GEICO policies like Auto, Motorcycle, RV, or Renters to qualify for potential discounts.
+
+2. **Validation and Prefill**
+
+   * Prefills certain fields using public property records for convenience.
+   * Ensures required fields are completed, numeric fields are within acceptable ranges, and dates fall within valid coverage windows.
+
+3. **Backend Processing (Spring Boot)**
+
+   * Receives frontend form data via **REST API**.
+   * Validates data server-side before saving.
+   * Stores user and property information in a **MySQL database**.
+   * Sends email notifications via MailHog during development for testing.
+
+4. **Database Design (MySQL)**
+
+   * Primary tables: `user_info` and `property_details`.
+   * Establishes foreign key relationships to link users with their property data.
+   * Easily extendable for features like quote history, policy bundles, or reporting.
+
+5. **Email Notifications**
+
+   * Sends registration confirmation with quote details to the user’s email.
+   * Ensures the user receives immediate acknowledgment of their submission.
+   * MailHog captures emails during development and testing.
+
+6. **API Testing (Postman)**
+
+   * REST endpoints are testable with JSON payloads using Postman.
+   * Facilitates backend validation, integration, and QA testing.
+
+7. **Optional Features**
+
+   * PDF/Excel generation of quote summary for users.
+   * Dynamic eligibility checks for bundling discounts.
+   * Historical reporting (monthly, weekly, yearly quotes).
+
+---
+
+### **User Workflow Example**
+
+1. **Start Application**
+
+   * User opens the GEICO Quote application in any browser or mobile device.
+   * Sees a welcome page with “Bundle and Save” options.
+
+2. **Fill Personal Info**
+
+   * Enters first and last name, email, phone number, years at current residence, and ZIP code.
+   * Optionally provides prior address if less than two years at current home.
+
+3. **Property Details**
+
+   * Selects coverage start date within allowed range.
+   * Enters roof year, foundation type, garage type, number of people, bathrooms, and appliance grade.
+
+4. **Insurance History**
+
+   * Indicates any past property claims.
+
+5. **Submit Form**
+
+   * Data is sent via **POST request** to Spring Boot backend API.
+   * Backend validates and stores data in MySQL and triggers confirmation email.
+
+6. **Confirmation**
+
+   * User sees a success message on the UI.
+   * Receives email confirmation with quote details and optional PDF.
+
+---
+
+### **Technical Stack**
+
+| Layer              | Technology            |
+| ------------------ | --------------------- |
+| Frontend           | HTML, JavaScript, CSS |
+| Backend            | Spring Boot (Java)    |
+| Database           | MySQL via XAMPP       |
+| API Testing        | Postman               |
+| Email Testing      | MailHog               |
+| Optional Reporting | PDF/Excel generation  |
+
+---
+
+### **Key Benefits**
+
+* **User-Friendly:** Step-by-step guidance reduces input errors and improves completion rate.
+* **Cross-Platform:** Fully responsive design works on mobile, tablet, and desktop browsers.
+* **Efficient Data Management:** Clean database design allows accurate storage and retrieval of user/property info.
+* **Automated Communication:** Immediate email confirmations ensure user trust and engagement.
+* **Scalable:** Easy to add features like dynamic quote calculations, bundling logic, or historical analytics.
+* **Testable & Reliable:** Postman + MailHog workflow supports smooth development, testing, and QA.
+
+---
+
+💡 **Summary:**
+The **GEICO Homeowners Insurance Quote Application** is a **modern, full-stack insurance quoting platform** 
+designed for both **customers and insurance companies**. It streamlines **quote collection, bundling, registration,
+ and communication**, combining a **responsive UI, robust backend, and scalable architecture** for future enhancements.
+
+---
+
+If you want, I can **also create a visual workflow diagram for this GEICO application**, 
+showing **user flow → frontend → API → database → email**, making it easy to present to stakeholders or developers.
+
+Do you want me to make that diagram next?
+
+
+
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+**Epic and scenario breakdown** for **GEICO Homeowners Insurance Quote Application**. 
+
+---
+
+## **Epic**
+
+**Epic Title:**
+**“GEICO Homeowners Insurance Quote System”**
+
+**Epic Description:**
+As a prospective homeowner, I want to **submit my personal and property details through a GEICO-branded web application**
+ so that I can **receive an instant or personalized homeowners insurance quote**. The system should guide me through **step-by-step forms, validations, and instant feedback**,
+  while being ready to integrate with **backend systems for database storage, email confirmations, and bundling discounts with other GEICO policies (auto, motorcycle, renters, etc.)**.
+
+**Acceptance Criteria for Epic:**
+
+1. Users can fill personal and property details in a stepwise, clear form.
+2. Form validations ensure required fields are completed and data is valid.
+3. Users receive visual confirmation of successful submission.
+4. The system supports future integration with backend APIs, email notifications, and bundled insurance discounts.
+5. The application UI is **responsive and GEICO-branded**, reflecting their brand colors, fonts, and style.
+
+---
+
+## **Breakdown of Scenarios / User Stories**
+
+### **1. User Onboarding & Form Entry**
+
+**Story:** As a GEICO user, I want to enter my personal information so that GEICO can identify me and contact me about my quote.
+
+* **Acceptance Criteria:**
+
+  * Fields: First Name, Last Name, Email (required), Phone, Years at Address (required), ZIP Code, Prior Address (optional).
+  * Real-time HTML5 validation on required fields and proper formats.
+  * Placeholders guide proper input.
+
+---
+
+### **2. Property Details Submission**
+
+**Story:** As a user, I want to provide details about my home so GEICO can give an accurate insurance quote.
+
+* **Acceptance Criteria:**
+
+  * Fields: Coverage Start Date (selectable range), Roof Year, Foundation Type, Finished Basement, Garage Type, Number of People, Half Bathrooms, Appliance Grade, Past Claims.
+  * Min/max constraints for numeric fields, dropdowns for Boolean/enum fields.
+  * Guidance notes on date ranges and acceptable inputs.
+
+---
+
+### **3. Form Validation & Error Handling**
+
+**Story:** As a user, I want the form to check my input before submission so that I don’t submit invalid data.
+
+* **Acceptance Criteria:**
+
+  * Required fields cannot be empty.
+  * Numeric fields respect min/max constraints.
+  * Dropdowns restrict Boolean values to valid options.
+  * Users see clear inline error messages.
+
+---
+
+### **4. Submission Feedback**
+
+**Story:** As a user, I want to know my quote request was successfully submitted so that I feel confident GEICO received it.
+
+* **Acceptance Criteria:**
+
+  * Submit button visually indicates success (checkmark, green color).
+  * Alert confirms receipt and estimated response time.
+  * Optional email confirmation if backend integration exists.
+
+---
+
+### **5. Backend Integration**
+
+**Story:** As a system, I want to store user and property information so GEICO representatives can process quotes efficiently.
+
+* **Acceptance Criteria:**
+
+  * Data saved to MySQL or another relational database.
+  * API endpoint accepts JSON payloads from frontend.
+  * Email confirmation triggered to user using backend mail service.
+  * Future scalability for PDF/Excel quote generation.
+
+---
+
+### **6. Bundling & Discounts**
+
+**Story:** As a user, I want to optionally bundle GEICO policies (Auto, Motorcycle, RV, Renters) so that I can receive discounts.
+
+* **Acceptance Criteria:**
+
+  * Dropdown or checkbox dynamically shows eligible bundling options.
+  * Backend can calculate bundled discount (optional future enhancement).
+  * Users see which options are not available in real-time.
+
+---
+
+### **7. Responsive UI & Branding**
+
+**Story:** As a user, I want the form to be **GEICO-branded** and responsive so that it works on any device and reinforces brand trust.
+
+* **Acceptance Criteria:**
+
+  * Colors, fonts, and icons follow GEICO brand guidelines (blue/white, clean fonts).
+  * Flexbox or grid ensures proper layout on mobile.
+  * Buttons and inputs are touch-friendly.
+
+---
+
+### **8. Analytics & Logging**
+
+**Story:** As GEICO administrators, I want to log submissions and track form activity so that we can improve user experience and monitor requests.
+
+* **Acceptance Criteria:**
+
+  * Each submission logged with timestamp and user info.
+  * Optional analytics integration for tracking funnel performance.
+  * Reports can be generated for internal review.
+
+---
+
+✅ **Summary:**
+This **GEICO Homeowners Insurance Quote Epic** organizes the application into a **complete Agile-ready structure**: from **user data collection and property details** to
+ **submission feedback, bundling, and backend integration**. It’s **ready for Sprint planning**, and the **user stories can be directly implemented as frontend tasks, backend APIs, and QA validations**.
+
+---
+
+
+-->
